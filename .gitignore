@@ -1,0 +1,280 @@
+# === PYTHON ===
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# === DJANGO ===
+# Django local settings
+local_settings.py
+
+# Django database
+*.sqlite3
+*.db
+
+# Django static files
+/static/
+/staticfiles/
+/media/
+
+# Django logs
+*.log
+django.log
+
+# Django migrations (optionnel - décommentez si vous ne voulez pas versionner)
+# */migrations/*
+# !*/migrations/__init__.py
+
+# Django secret key
+.secret_key
+
+# === ENVIRONNEMENT & CONFIG ===
+# Fichiers de configuration sensibles
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+config.ini
+secrets.json
+
+# === IA & ML ===
+# Modèles pré-entraînés (gros fichiers)
+*.pkl
+*.joblib
+*.h5
+*.hdf5
+*.onnx
+models/
+model_cache/
+transformers_cache/
+
+# Cache BERT/sentence-transformers
+.cache/
+sentence_transformers/
+
+# Datasets volumineux
+datasets/
+data/
+*.csv
+*.json
+*.txt
+# Exceptions pour petits fichiers de config
+!requirements.txt
+!**/fixtures/*.json
+
+# Cache Hugging Face
+.huggingface/
+
+# === IDE & ÉDITEURS ===
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# === SYSTÈME ===
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+*.lnk
+
+# Linux
+*~
+
+# === LOGS & TEMP ===
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# === TESTS ===
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+
+# Pytest
+.pytest_cache/
+
+# === BACKUP & ARCHIVES ===
+# Backup files
+*.backup
+*.bak
+*.orig
+*.save
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# === DOCUMENTATION ===
+# Sphinx documentation
+docs/_build/
+
+# === SPÉCIFIQUE AU PROJET ===
+# Votre script de test (gardez-le local)
+test_bert_llama.py
+
+# Fichiers temporaires de développement
+debug.py
+test.py
+scratch.py
+
+# Dumps de base de données
+*.dump
+*.sql
+
+# === PRODUCTION ===
+# Fichiers de déploiement
+docker-compose.override.yml
+.dockerignore
+Dockerfile.local
+
+# Variables d'environnement de production
+.env.production
+.env.staging
+
+# Certificats SSL
+*.pem
+*.key
+*.crt
