@@ -163,3 +163,7 @@ LOGGING = {
         },
     },
 }
+
+# Session configuration
+SESSION_COOKIE_AGE = 86400  # 24 heures
+SESSION_SAVE_EVERY_REQUEST = True

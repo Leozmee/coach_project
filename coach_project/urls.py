@@ -26,5 +26,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', redirect_to_chatbot, name='home'),
     path('chatbot/', include('chatbot.urls')),
-    path('api/', include('chatbot.urls')),
 ]
