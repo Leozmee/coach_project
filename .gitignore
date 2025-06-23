@@ -1,0 +1,391 @@
+# .gitignore - Projet Fitness Coach IA
+# =====================================
+
+# ================================
+# PYTHON STANDARD
+# ================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ================================
+# ENVIRONNEMENTS VIRTUELS
+# ================================
+venv/
+env/
+ENV/
+fitness_env/
+.venv/
+.env/
+virtualenv/
+pipenv/
+
+# ================================
+# MODÈLES IA (FICHIERS VOLUMINEUX)
+# ================================
+
+# Tous les dossiers de modèles
+models/*/
+!models/.gitkeep
+!models/README.md
+
+# Fichiers de modèles spécifiques (très volumineux)
+*.safetensors
+*.bin
+pytorch_model.bin
+model.safetensors
+tf_model.h5
+model.onnx
+model.tflite
+
+# Fichiers de tokenizer volumineux
+tokenizer.json
+vocab.json
+merges.txt
+sentencepiece.bpe.model
+*.spm
+
+# Index et embeddings
+*.index
+*.faiss
+*.pkl
+*.pickle
+embeddings/
+faiss_index/
+vector_store/
+
+# Checkpoints et sauvegardes
+checkpoints/
+*.ckpt
+*.pth
+*.pt
+*.tar
+
+# Cache de modèles Hugging Face
+.cache/
+transformers_cache/
+huggingface/
+~/.cache/huggingface/
+
+# ================================
+# DONNÉES ET DATASETS
+# ================================
+data/
+datasets/
+raw_data/
+processed_data/
+*.csv
+*.json
+*.jsonl
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.db
+*.sqlite
+*.sqlite3
+
+# Fichiers de données volumineux
+*.zip
+*.tar.gz
+*.rar
+*.7z
+dataset_*.txt
+training_data/
+validation_data/
+
+# ================================
+# LOGS ET MONITORING
+# ================================
+logs/
+*.log
+*.log.*
+log_*.txt
+mlruns/
+runs/
+tensorboard_logs/
+wandb/
+.neptune/
+
+# Logs spécifiques
+api.log
+streamlit.log
+training.log
+fitness_api.log
+django.log
+
+# ================================
+# CONFIGURATION SENSIBLE
+# ================================
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+config.ini
+secrets.json
+credentials.json
+api_keys.txt
+
+# Clés et tokens
+*.key
+*.pem
+*.p12
+*.jks
+token.txt
+access_token
+refresh_token
+
+# ================================
+# CACHE ET TEMPORAIRES
+# ================================
+.cache/
+.streamlit/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Cache spécifique Streamlit
+.streamlit/config.toml
+.streamlit/credentials.toml
+.streamlit/secrets.toml
+
+# ================================
+# IDE ET ÉDITEURS
+# ================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.spyderproject
+.spyproject
+.ropeproject
+*.sublime-workspace
+*.sublime-project
+
+# VS Code
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+
+# PyCharm
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries/
+.idea/shelf/
+
+# ================================
+# SYSTÈME D'EXPLOITATION
+# ================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Windows
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ================================
+# JUPYTER ET NOTEBOOKS
+# ================================
+.ipynb_checkpoints/
+*.ipynb
+jupyter_notebook_config.py
+.jupyter/
+
+# Checkpoint files
+*-checkpoint.ipynb
+Untitled*.ipynb
+
+# ================================
+# TESTS ET QUALITÉ CODE
+# ================================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+.prof
+
+# Test artifacts
+test_results/
+test_reports/
+pytest_reports/
+
+# ================================
+# DÉPLOIEMENT ET PRODUCTION
+# ================================
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+.docker/
+
+# Kubernetes
+*.yaml
+*.yml
+k8s/
+kubernetes/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# ================================
+# FICHIERS SPÉCIFIQUES AU PROJET
+# ================================
+
+# Sauvegardes de modèles
+model_backups/
+backup_*/
+*.backup
+
+# Métriques et résultats
+metrics/
+results/
+experiments/
+outputs/
+
+# Fichiers de config temporaires
+temp_config.json
+local_settings.py
+debug_config.ini
+
+# Base de données locales
+local.db
+dev.db
+fitness.db
+
+# Uploads utilisateur
+uploads/
+user_data/
+temp_files/
+
+# ================================
+# FICHIERS DE BUILD
+# ================================
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+
+# Documentation générée
+docs/_build/
+docs/build/
+site/
+
+# ================================
+# OUTILS DE DÉVELOPPEMENT
+# ================================
+
+# Black
+.black-cache/
+
+# isort
+.isort.cfg
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Bandit
+.bandit
+
+# ================================
+# EXCEPTIONS (FICHIERS À GARDER)
+# ================================
+
+# Garder ces fichiers importants
+!.gitkeep
+!README.md
+!LICENSE
+!requirements.txt
+!requirements-*.txt
+!setup.py
+!pyproject.toml
+!Makefile
+
+# Garder les fichiers de configuration légers
+!config.example.json
+!settings.example.py
+!.env.example
+
+# Garder la documentation
+!docs/
+!*.md
+!*.rst
+
+# Garder les scripts utilitaires
+!scripts/*.py
+!scripts/*.sh
+
+# Garder les tests
+!tests/
+!test_*.py
+!*_test.py
+
+# ================================
+# NOTES IMPORTANTES
+# ================================
+
+# Ce .gitignore exclut :
+# - Les modèles IA (trop volumineux pour Git)
+# - Les données sensibles (clés API, tokens)
+# - Les fichiers temporaires et cache
+# - Les logs et métriques
+# - Les environnements virtuels
+
+# Pour partager un modèle :
+# 1. Utilisez Git LFS : git lfs track "*.safetensors"
+# 2. Ou uploadez sur Hugging Face Hub
+# 3. Ou partagez via un service cloud
+
+# Pour les gros datasets :
+# 1. Utilisez DVC (Data Version Control)
+# 2. Ou stockez sur un service cloud
+# 3. Documentez les sources dans README.md
