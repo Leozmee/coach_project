@@ -1,198 +1,58 @@
-# requirements.txt - Dépendances complètes du projet Fitness Coach
+# requirements.txt - Versions corrigées pour 2024/2025
 
 # ================================
 # CORE FRAMEWORKS
 # ================================
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-streamlit==1.28.1
+fastapi>=0.104.0,<0.115.0
+uvicorn[standard]>=0.24.0,<0.32.0
+streamlit>=1.28.0,<1.40.0
 
 # ================================
-# IA & MACHINE LEARNING
+# IA & MACHINE LEARNING (VERSIONS ACTUELLES)
 # ================================
-torch>=2.0.0,<2.2.0
-transformers>=4.35.0,<4.40.0
-sentence-transformers>=2.2.2,<2.3.0
-faiss-cpu>=1.7.4,<1.8.0
-numpy>=1.24.0,<1.26.0
+torch>=2.2.0,<2.8.0
+transformers>=4.35.0,<4.47.0
+sentence-transformers>=2.2.2,<3.0.0
+faiss-cpu>=1.7.4,<1.9.0
+numpy>=1.24.0,<1.27.0
 
 # ================================
 # DATA PROCESSING
 # ================================
-pandas>=2.0.0,<2.2.0
-datasets>=2.14.0,<2.16.0
+pandas>=2.0.0,<2.3.0
+datasets>=2.14.0,<3.0.0
 
 # ================================
 # API & WEB
 # ================================
-pydantic>=2.4.0,<2.6.0
-pydantic-settings>=2.0.0,<2.2.0
-python-multipart>=0.0.6
-aiofiles>=23.2.0,<24.0.0
-requests>=2.31.0,<2.32.0
-httpx>=0.25.0,<0.26.0
+pydantic>=2.4.0,<2.10.0
+pydantic-settings>=2.0.0,<2.6.0
+python-multipart>=0.0.6,<0.1.0
+aiofiles>=23.2.0,<25.0.0
+requests>=2.31.0,<2.33.0
+httpx>=0.25.0,<0.28.0
 
 # ================================
 # UTILITIES
 # ================================
 python-dotenv>=1.0.0,<1.1.0
 tqdm>=4.66.0,<4.67.0
-rich>=13.6.0,<13.8.0
-click>=8.1.0,<8.2.0
 
 # ================================
 # STREAMLIT COMPONENTS
 # ================================
-streamlit-chat>=0.1.1
-streamlit-option-menu>=0.3.6
-plotly>=5.17.0,<5.18.0
-altair>=5.1.0,<5.2.0
-
-# ================================
-# DEVELOPMENT & TESTING
-# ================================
-pytest>=7.4.0,<7.5.0
-pytest-asyncio>=0.21.0,<0.22.0
-black>=23.9.0,<23.11.0
-isort>=5.12.0,<5.13.0
-flake8>=6.1.0,<6.2.0
-
-# ================================
-# LOGGING & MONITORING
-# ================================
-loguru>=0.7.2,<0.8.0
-python-json-logger>=2.0.7,<2.1.0
-
-# ================================
-# SECURITY
-# ================================
-python-jose[cryptography]>=3.3.0,<3.4.0
-passlib[bcrypt]>=1.7.4,<1.8.0
-
-# ================================
-# OPTIONAL: PRODUCTION DEPLOYMENT
-# ================================
-gunicorn>=21.2.0,<21.3.0
-psutil>=5.9.0,<5.10.0
-
-# ================================
-# OPTIONAL: DEVELOPMENT TOOLS
-# ================================
-jupyter>=1.0.0,<1.1.0
-ipykernel>=6.25.0,<6.26.0
-ipywidgets>=8.1.0,<8.2.0
+plotly>=5.17.0,<5.25.0
+altair>=5.1.0,<5.5.0
 
 # ================================
 # VERSION PINNING POUR STABILITÉ
 # ================================
-# Certaines versions sont épinglées pour éviter les conflits
-
-# Tokenizers (requis par transformers)
-tokenizers>=0.14.0,<0.15.0
-
-# Hugging Face Hub
-huggingface-hub>=0.17.0,<0.18.0
-
-# YAML parsing
+tokenizers>=0.15.0,<0.21.0
+huggingface-hub>=0.17.0,<0.26.0
 PyYAML>=6.0.1,<6.1.0
 
-# JSON handling
-orjson>=3.9.0,<3.10.0
-
-# Date/time utilities
-python-dateutil>=2.8.2,<2.9.0
-
-# File handling
-pathlib2>=2.3.7,<2.4.0;python_version<"3.4"
-
-# Progress bars
-alive-progress>=3.1.0,<3.2.0
-
-# Configuration management
-configparser>=6.0.0,<6.1.0
-
 # ================================
-# SYSTÈME D'EXPLOITATION SPÉCIFIQUE
+# DÉVELOPPEMENT (OPTIONNEL)
 # ================================
-
-# Windows uniquement
-pywin32>=306;platform_system=="Windows"
-wmi>=1.5.1;platform_system=="Windows"
-
-# Linux uniquement  
-python-systemd>=235;platform_system=="Linux"
-
-# ================================
-# EXTRAS POUR FONCTIONNALITÉS AVANCÉES
-# ================================
-
-# Support GPU (optionnel - décommentez si GPU disponible)
-# torch>=2.0.0+cu118 --index-url https://download.pytorch.org/whl/cu118
-
-# Base de données (pour futures fonctionnalités)
-# sqlite3  # Inclus dans Python standard
-# sqlalchemy>=2.0.0,<2.1.0
-
-# Cache Redis (optionnel)
-# redis>=5.0.0,<5.1.0
-# redis-py-cluster>=2.1.0,<2.2.0
-
-# Monitoring avancé (optionnel)
-# prometheus-client>=0.17.0,<0.18.0
-# grafana-api>=1.0.0,<1.1.0
-
-# ================================
-# NOTES D'INSTALLATION
-# ================================
-
-# Pour installer avec GPU support (CUDA):
-# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-
-# Pour installation complète avec extras:
-# pip install -r requirements.txt
-
-# Pour développement seulement:
-# pip install -r requirements.txt --no-deps
-
-# Pour production (versions épinglées):
-# pip install -r requirements.txt --no-upgrade
-
-# ================================
-# COMMANDES UTILES
-# ================================
-
-# Générer un fichier requirements.txt mis à jour:
-# pip freeze > requirements-freeze.txt
-
-# Vérifier les vulnérabilités:
-# pip audit
-
-# Mettre à jour tous les packages:
-# pip list --outdated
-# pip install --upgrade package_name
-
-# ================================
-# DÉPENDANCES PAR COMPOSANT
-# ================================
-
-# API FastAPI minimale:
-# fastapi, uvicorn, pydantic, python-multipart
-
-# IA/ML minimale:
-# torch, transformers, sentence-transformers, faiss-cpu
-
-# Streamlit minimale:
-# streamlit, pandas, plotly, requests
-
-# Testing minimal:
-# pytest, pytest-asyncio
-
-# ================================
-# TAILLES APPROXIMATIVES
-# ================================
-
-# Total: ~2.5GB (avec PyTorch CPU)
-# PyTorch: ~800MB
-# Transformers: ~200MB  
-# Streamlit: ~100MB
-# Autres: ~400MB
+pytest>=7.4.0,<8.0.0
+black>=23.9.0,<25.0.0
