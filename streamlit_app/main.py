@@ -1,4 +1,4 @@
-# streamlit_app/main_v3_lavande_aigue_clean.py - Version Lavande & Aigue-marine (Code propre)
+# streamlit_app/main.py - Version avec Avatar SVG intégré
 
 import streamlit as st
 import requests
@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 import logging
 from pathlib import Path
+from avatar_component import display_zen_avatar, get_contextual_avatar, load_svg_as_base64
 
 # Configuration de la page
 st.set_page_config(
@@ -17,7 +18,34 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Styles CSS - Palette Lavande & Aigue-marine
+# Charger l'avatar SVG une seule fois
+def get_avatar_html(size=30, mood="zen"):
+    """Génère le HTML pour l'avatar SVG inline"""
+    current_dir = Path(__file__).parent
+    svg_path = current_dir / "assets" / "avatar.svg"
+    svg_base64 = load_svg_as_base64(str(svg_path))
+    
+    if svg_base64:
+        # Filtres selon l'humeur
+        mood_filters = {
+            "zen": "hue-rotate(0deg) brightness(1) saturate(1)",
+            "peaceful": "hue-rotate(30deg) brightness(1.1) saturate(0.8)",
+            "thinking": "hue-rotate(-30deg) brightness(0.9) saturate(1.2)",
+            "happy": "hue-rotate(60deg) brightness(1.2) saturate(1.3)"
+        }
+        
+        filter_style = mood_filters.get(mood, mood_filters["zen"])
+        
+        return f'''<img src="data:image/svg+xml;base64,{svg_base64}" 
+                   style="width:{size}px; height:{size}px; filter:{filter_style}; 
+                          border-radius:50%; vertical-align:middle; margin-right:8px;" 
+                   alt="Avatar {mood}" />'''
+    else:
+        # Fallback emoji
+        fallback = {"zen": "🧘", "peaceful": "😌", "thinking": "🤔", "happy": "😊"}
+        return f'<span style="font-size:{size}px; margin-right:8px;">{fallback.get(mood, "🧘")}</span>'
+
+# Styles CSS modifiés pour intégrer l'avatar SVG
 st.markdown("""
 <style>
 /* ==================== PALETTE LAVANDE & AIGUE-MARINE ==================== */
@@ -66,6 +94,10 @@ st.markdown("""
     text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
     font-weight: 600;
     letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
 }
 
 .main-header p {
@@ -113,9 +145,9 @@ st.markdown("""
 .bot-message {
     background: linear-gradient(135deg, var(--lavande-principal) 0%, #B19CD9 100%);
     color: white;
-    padding: 1.8rem;
+    padding: 1.8rem 1.8rem 1.8rem 3rem;
     border-radius: 25px 25px 25px 8px;
-    margin: 1.2rem 0;
+    margin: 1.2rem 0 1.2rem 2rem;
     box-shadow: 
         0 10px 30px rgba(147, 112, 219, 0.3),
         inset 0 1px 3px rgba(255, 255, 255, 0.3);
@@ -125,22 +157,33 @@ st.markdown("""
     backdrop-filter: blur(5px);
 }
 
-.bot-message::before {
-    content: "🌟";
+.bot-avatar-bubble {
     position: absolute;
-    top: -12px;
-    left: -12px;
+    top: 15px;
+    left: -20px;
     background: linear-gradient(45deg, var(--aigue-marine), #40E0D0);
     border-radius: 50%;
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     border: 2px solid white;
-    font-size: 1.1rem;
     animation: gentle-glow 3s ease-in-out infinite;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.bot-avatar-bubble img {
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+    vertical-align: middle !important;
 }
 
 @keyframes gentle-glow {
@@ -206,9 +249,9 @@ st.markdown("""
     100% { background-position: 400% 50%; }
 }
 
-/* Input avec style apaisant */
+/* Input avec style apaisant - FOND BLANC SIMPLE */
 .stTextInput > div > div > input {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(0, 206, 209, 0.05));
+    background: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: blur(10px);
     border: 2px solid var(--aigue-marine);
     border-radius: 20px;
@@ -221,11 +264,11 @@ st.markdown("""
 
 .stTextInput > div > div > input:focus {
     border-color: var(--lavande-principal);
+    background: rgba(255, 255, 255, 0.98) !important;
     box-shadow: 
         0 0 20px rgba(0, 206, 209, 0.3),
         0 0 40px rgba(147, 112, 219, 0.2);
     transform: scale(1.02);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(147, 112, 219, 0.08));
 }
 
 .stTextInput > div > div > input::placeholder {
@@ -258,7 +301,7 @@ st.markdown("""
     background: linear-gradient(45deg, #20B2AA, var(--aigue-marine));
 }
 
-/* Métriques avec style zen */
+/* Métriques avec style zen - SANS BARRE EN HAUT */
 .metric-container {
     background: linear-gradient(135deg, var(--fond-clair), rgba(0, 206, 209, 0.08));
     backdrop-filter: blur(15px);
@@ -281,16 +324,8 @@ st.markdown("""
     border-color: var(--lavande-principal);
 }
 
-.metric-container::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--aigue-marine), var(--lavande-principal), var(--saumon-orange));
-    border-radius: 25px 25px 0 0;
-}
+/* Suppression de la barre en haut */
+/* .metric-container::after - SUPPRIMÉ */
 
 .metric-container h4 {
     margin: 0 0 1rem 0;
@@ -341,10 +376,22 @@ st.markdown("""
     border-width: 3px !important;
 }
 
+/* Style pour l'avatar dans le header */
+.header-avatar {
+    animation: gentle-float 4s ease-in-out infinite;
+}
+
+@keyframes gentle-float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-5px) rotate(2deg); }
+}
+
 /* Responsive design doux */
 @media (max-width: 768px) {
     .main-header h1 { 
         font-size: 2.5rem; 
+        flex-direction: column;
+        gap: 10px;
     }
     .main-header p { 
         font-size: 1.1rem; 
@@ -418,10 +465,16 @@ def init_session_state():
         st.session_state.user_profile = {}
 
 def display_header():
-    """Affiche l'en-tête principal"""
-    st.markdown("""
+    """Affiche l'en-tête principal avec avatar SVG"""
+    # Générer l'avatar HTML pour le header (plus gros)
+    avatar_html = get_avatar_html(size=120, mood="happy")
+    
+    st.markdown(f"""
     <div class="main-header">
-        <h1>🏋️ Coach Fitness IA</h1>
+        <h1>
+            <span class="header-avatar">{avatar_html}</span>
+            Coach Fitness IA
+        </h1>
         <p>Votre accompagnateur bien-être personnalisé</p>
     </div>
     """, unsafe_allow_html=True)
@@ -429,7 +482,9 @@ def display_header():
 def display_sidebar():
     """Affiche la sidebar avec les paramètres"""
     with st.sidebar:
-        st.markdown("### 🌸 Configuration Zen")
+        
+        # Avatar dans la sidebar
+        display_zen_avatar(mood="zen", size=60, position="center")
         
         # Profil utilisateur
         st.markdown("#### 🧘 Votre Profil")
@@ -472,7 +527,7 @@ def display_sidebar():
         
         # État de l'API
         st.markdown("---")
-        st.markdown("### 🌺 État du Système")
+        st.markdown("### 🌸 État du Système")
         
         health = st.session_state.api_client.health_check()
         if health:
@@ -483,7 +538,6 @@ def display_sidebar():
                 st.success("🌟 Système harmonieux")
                 st.info(f"🤖 IA: En éveil")
                 st.info(f"📱 Processeur: {health.get('device', 'unknown')}")
-                st.info(f"📊 Intelligence: {'🌸' if health.get('rag_enabled') else '🌿'}")
             else:
                 st.warning("🌤️ Système en transition")
         else:
@@ -491,12 +545,12 @@ def display_sidebar():
         
         # Actions
         st.markdown("---")
-        if st.button("🌸 Nouveau Départ"):
+        if st.button("Nouveau Départ"):
             st.session_state.messages = []
             st.rerun()
 
 def display_chat():
-    """Affiche l'interface de chat avec style zen"""
+    """Affiche l'interface de chat avec style zen et avatars SVG"""
     
     # Zone de messages
     chat_container = st.container()
@@ -514,11 +568,17 @@ def display_chat():
                 backdrop-filter: blur(10px);
             ">
                 <h2 style="color: #9370DB; text-shadow: 1px 1px 3px rgba(0,0,0,0.2);">
-                    🌸 Bienvenue dans votre espace bien-être
+                     Bienvenue dans votre espace bien-être
                 </h2>
                 <p style="font-size: 1.2rem; color: #00CED1; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
                     Un coaching fitness doux et bienveillant, adapté à votre rythme
                 </p>
+            """, unsafe_allow_html=True)
+            
+            # Avatar de bienvenue
+            display_zen_avatar(mood="peaceful", size=120, position="center")
+            
+            st.markdown("""
                 <div style="margin-top: 2.5rem;">
                     <p style="color: #9370DB; font-size: 1.1rem; font-weight: 500;">
                         🌺 Questions bien-être :
@@ -570,7 +630,7 @@ def display_chat():
             </div>
             """, unsafe_allow_html=True)
         
-        # Afficher l'historique des messages
+        # Afficher l'historique des messages avec avatars SVG
         for message in st.session_state.messages:
             if message["role"] == "user":
                 st.markdown(f"""
@@ -579,9 +639,16 @@ def display_chat():
                 </div>
                 """, unsafe_allow_html=True)
             else:
+                # Déterminer l'humeur de l'avatar basée sur le contenu
+                avatar_config = get_contextual_avatar(message["content"])
+                avatar_html = get_avatar_html(size=24, mood=avatar_config["mood"])
+                
                 st.markdown(f"""
                 <div class="bot-message">
-                    <strong>🌟 Coach Bien-être :</strong> {message["content"]}
+                    <div class="bot-avatar-bubble">
+                        {avatar_html}
+                    </div>
+                    <strong>Coach Bien-être :</strong> {message["content"]}
                     <div style="
                         opacity: 0.8; 
                         margin-top: 1.2rem; 
@@ -610,11 +677,38 @@ def display_chat():
         col1, col2 = st.columns([1, 3])
         
         with col1:
-            send_button = st.form_submit_button("🌟 Envoyer", type="primary")
+            send_button = st.form_submit_button("Envoyer", type="primary")
+            
+            # Ajouter l'avatar au bouton via CSS
+            current_dir = Path(__file__).parent
+            svg_path = current_dir / "assets" / "avatar.svg"
+            svg_base64 = load_svg_as_base64(str(svg_path))
+            
+            if svg_base64:
+                st.markdown(f"""
+                <style>
+                div[data-testid="stForm"] .stButton > button {{
+                    position: relative;
+                    padding-left: 45px !important;
+                }}
+                div[data-testid="stForm"] .stButton > button:before {{
+                    content: '';
+                    position: absolute;
+                    left: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 20px;
+                    height: 20px;
+                    background-image: url('data:image/svg+xml;base64,{svg_base64}');
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                    background-position: center;
+                    filter: brightness(0) invert(1);
+                    border-radius: 50%;
+                }}
+                </style>
+                """, unsafe_allow_html=True)
         
-        with col2:
-            st.markdown("*Appuyez sur **Entrée** pour une réponse bienveillante*")
-    
     # Traitement du message si form soumis
     if send_button and user_input.strip():
         
@@ -625,29 +719,36 @@ def display_chat():
             "timestamp": datetime.now()
         })
         
-        # Indicateur de chargement zen
-        with st.spinner("🌸 Réflexion bienveillante en cours..."):
-            start_time = time.time()
-            
-            # Appel API
-            response = st.session_state.api_client.chat(
-                user_input, 
-                st.session_state.user_profile
-            )
-            
-            response_time = time.time() - start_time
-            
-            # Ajouter réponse du bot
-            bot_message = {
-                "role": "assistant",
-                "content": response.get("response", "Erreur de réponse"),
-                "model_used": response.get("model_used", "unknown"),
-                "response_time": response.get("response_time", response_time),
-                "confidence": response.get("confidence", "serein"),
-                "timestamp": datetime.now()
-            }
-            
-            st.session_state.messages.append(bot_message)
+        # Avatar en mode thinking pendant la génération
+        col_avatar, col_spinner = st.columns([1, 4])
+        
+        with col_avatar:
+            display_zen_avatar(mood="thinking", size=80, position="center")
+        
+        with col_spinner:
+            # Indicateur de chargement zen
+            with st.spinner("🌸 Réflexion bienveillante en cours..."):
+                start_time = time.time()
+                
+                # Appel API
+                response = st.session_state.api_client.chat(
+                    user_input, 
+                    st.session_state.user_profile
+                )
+                
+                response_time = time.time() - start_time
+        
+        # Ajouter réponse du bot
+        bot_message = {
+            "role": "assistant",
+            "content": response.get("response", "Erreur de réponse"),
+            "model_used": response.get("model_used", "unknown"),
+            "response_time": response.get("response_time", response_time),
+            "confidence": response.get("confidence", "serein"),
+            "timestamp": datetime.now()
+        }
+        
+        st.session_state.messages.append(bot_message)
         
         # Rerun pour afficher la nouvelle conversation
         st.rerun()
@@ -715,7 +816,7 @@ def main():
     # Statistiques en bas
     display_stats()
     
-    # Footer Zen
+    # Footer Zen simple
     st.markdown("---")
     st.markdown("""
     <div style="
