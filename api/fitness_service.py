@@ -1,4 +1,4 @@
-# api/fitness_service.py - Service complet avec votre modèle DistilGPT-2
+# api/fitness_service.py - Version corrigée pour SafeTensors
 
 import os
 import logging
@@ -30,6 +30,7 @@ class FitnessCoachService:
         self.model_loaded = False
         self.rag_enabled = False
         self.initialization_time = None
+        self.initialization_error = None
         
         # Composants
         self.tokenizer = None
@@ -66,65 +67,131 @@ class FitnessCoachService:
         """Détermine le device optimal"""
         if torch.cuda.is_available():
             device = torch.device("cuda")
-            logger.info(f"🚀 GPU: {torch.cuda.get_device_name()}")
+            logger.info(f"🚀 GPU détecté: {torch.cuda.get_device_name()}")
         else:
             device = torch.device("cpu")
-            logger.info("💻 CPU")
+            logger.info("💻 Utilisation CPU")
         return device
     
     def _initialize_service(self):
-        """Initialise le service complet"""
+        """Initialise le service complet avec gestion d'erreurs améliorée"""
         start_time = datetime.now()
         
         try:
             logger.info("🏋️ Initialisation Coach Fitness...")
+            logger.info(f"📁 Chemin modèle: {self.model_path.absolute()}")
+            
+            # Vérifier existence du modèle
+            if not self.model_path.exists():
+                error_msg = f"Dossier modèle non trouvé: {self.model_path.absolute()}"
+                logger.error(f"❌ {error_msg}")
+                self.initialization_error = error_msg
+                self._suggest_model_fix()
+                return
+            
+            # Vérifier fichiers requis avec support SafeTensors
+            required_files = ["config.json"]
+            model_files = ["pytorch_model.bin", "model.safetensors"]
+            
+            missing_base = []
+            for file in required_files:
+                if not (self.model_path / file).exists():
+                    missing_base.append(file)
+            
+            # Vérifier au moins un fichier de modèle
+            model_file_found = None
+            for model_file in model_files:
+                if (self.model_path / model_file).exists():
+                    model_file_found = model_file
+                    break
+            
+            if missing_base:
+                error_msg = f"Fichiers de base manquants dans {self.model_path}: {missing_base}"
+                logger.error(f"❌ {error_msg}")
+                self.initialization_error = error_msg
+                return
+            
+            if not model_file_found:
+                error_msg = f"Aucun fichier de modèle trouvé dans {self.model_path}"
+                logger.error(f"❌ {error_msg}")
+                self.initialization_error = error_msg
+                return
+            
+            logger.info(f"✅ Fichiers modèle détectés: {model_file_found}")
             
             # 1. Charger DistilGPT-2
+            logger.info("🤖 Chargement du modèle DistilGPT-2...")
             self._load_model()
             
             # 2. Charger RAG (optionnel)
             if RAG_AVAILABLE:
+                logger.info("📊 Chargement du système RAG...")
                 self._load_rag()
+            else:
+                logger.warning("⚠️ RAG non disponible (dépendances manquantes)")
             
             self.model_loaded = True
             self.initialization_time = (datetime.now() - start_time).total_seconds()
             
-            logger.info(f"✅ Service initialisé en {self.initialization_time:.2f}s")
+            logger.info(f"✅ Service initialisé avec succès en {self.initialization_time:.2f}s")
+            logger.info(f"📱 Device: {self.device}")
+            logger.info(f"🤖 Modèle: DistilGPT-2 fine-tuné")
+            logger.info(f"📊 RAG: {'Activé' if self.rag_enabled else 'Désactivé'}")
             
         except Exception as e:
-            logger.error(f"❌ Erreur initialisation: {e}")
+            error_msg = f"Erreur lors de l'initialisation: {str(e)}"
+            logger.error(f"❌ {error_msg}")
+            self.initialization_error = error_msg
             self.model_loaded = False
+            self._suggest_model_fix()
+    
+    def _suggest_model_fix(self):
+        """Suggestions pour corriger les problèmes de modèle"""
+        logger.info("\n🔧 SUGGESTIONS DE CORRECTION:")
+        logger.info("1. Vérifier le chemin du modèle:")
+        logger.info(f"   ls -la {self.model_path}")
+        logger.info("2. Diagnostic complet:")
+        logger.info("   python diagnostic_model_fixed.py")
+        logger.info("3. Installer accelerate si nécessaire:")
+        logger.info("   pip install accelerate")
     
     def _load_model(self):
-        """Charge votre modèle DistilGPT-2 fine-tuné"""
+        """Charge votre modèle DistilGPT-2 fine-tuné avec support SafeTensors"""
         try:
-            if not self.model_path.exists():
-                raise FileNotFoundError(f"Modèle non trouvé: {self.model_path}")
+            logger.info(f"📚 Chargement tokenizer depuis: {self.model_path}")
             
-            logger.info(f"📚 Chargement modèle: {self.model_path}")
-            
-            # Tokenizer
+            # Tokenizer avec gestion d'erreurs
             self.tokenizer = AutoTokenizer.from_pretrained(str(self.model_path))
             
             # Configurer pad token si nécessaire
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
                 self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+                logger.info("🔧 Pad token configuré")
             
             # Mettre à jour config génération
             self.generation_config['pad_token_id'] = self.tokenizer.pad_token_id
             self.generation_config['eos_token_id'] = self.tokenizer.eos_token_id
             
-            # Modèle
+            logger.info(f"✅ Tokenizer chargé. Vocabulaire: {len(self.tokenizer.vocab)}")
+            
+            # Détection du format de modèle
+            if (self.model_path / "model.safetensors").exists():
+                logger.info("🔒 Format SafeTensors détecté")
+            elif (self.model_path / "pytorch_model.bin").exists():
+                logger.info("⚡ Format PyTorch détecté")
+            
+            # Modèle avec options adaptées (SANS low_cpu_mem_usage pour éviter accelerate)
+            logger.info(f"⚡ Chargement modèle sur {self.device}...")
             self.model = AutoModelForCausalLM.from_pretrained(
                 str(self.model_path),
                 torch_dtype=torch.float16 if self.device.type == "cuda" else torch.float32,
-                low_cpu_mem_usage=True
+                # Retirer low_cpu_mem_usage pour éviter accelerate
             )
             self.model.to(self.device)
             self.model.eval()
             
-            logger.info("✅ Modèle DistilGPT-2 chargé")
+            logger.info("✅ Modèle DistilGPT-2 chargé avec succès")
             
         except Exception as e:
             logger.error(f"❌ Erreur chargement modèle: {e}")
@@ -313,7 +380,7 @@ Réponse: """
             # 3. Créer prompt
             prompt = self._create_prompt(question, relevant_docs)
             
-            # 4. Tokeniser
+            # 4. Tokeniser avec attention_mask
             inputs = self.tokenizer.encode(
                 prompt, 
                 return_tensors='pt', 
@@ -321,10 +388,14 @@ Réponse: """
                 max_length=512
             ).to(self.device)
             
+            # Créer attention_mask pour éviter le warning
+            attention_mask = torch.ones_like(inputs)
+            
             # 5. Générer avec votre modèle DistilGPT-2
             with torch.no_grad():
                 outputs = self.model.generate(
                     inputs,
+                    attention_mask=attention_mask,  # Ajouter attention_mask
                     max_length=inputs.shape[1] + self.generation_config['max_new_tokens'],
                     temperature=self.generation_config['temperature'],
                     do_sample=self.generation_config['do_sample'],
@@ -428,6 +499,7 @@ Réponse: """
             'rag_enabled': self.rag_enabled,
             'device': str(self.device),
             'initialization_time': self.initialization_time,
+            'initialization_error': self.initialization_error,
             'stats': self.stats.copy(),
             'exercise_database_size': len(self.exercise_database),
             'timestamp': datetime.now().isoformat()
