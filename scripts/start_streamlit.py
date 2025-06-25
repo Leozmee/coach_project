@@ -7,6 +7,7 @@ from pathlib import Path
 import requests
 import time
 
+
 def check_api_status():
     """Vérifie que l'API est accessible"""
     print("🔍 Vérification de l'API...")

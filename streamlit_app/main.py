@@ -1,13 +1,17 @@
-# streamlit_app/main.py - Version avec sélecteur simple, style préservé
+# streamlit_app/main.py - Version avec sélecteur simple, style préservé + YouTube
 
 import streamlit as st
 import requests
 import json
 import time
+import os
+import urllib.parse
+import urllib.request
 from datetime import datetime
 from typing import Dict, Any, Optional
 import logging
 from pathlib import Path
+from dotenv import load_dotenv
 from avatar_component import display_zen_avatar, get_contextual_avatar, load_svg_as_base64
 
 # Configuration de la page
@@ -17,6 +21,42 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# ───────────────────────────────────────────────────
+# ENV & KEYS
+# ───────────────────────────────────────────────────
+load_dotenv()
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+
+# ───────────────────────────────────────────────────
+# YouTube Helper
+# ───────────────────────────────────────────────────
+def search_youtube(query: str, max_results: int = 1):
+    """Renvoie liste de (title, url) YouTube."""
+    if not YOUTUBE_API_KEY:
+        return []
+    endpoint = "https://www.googleapis.com/youtube/v3/search"
+    params = {
+        "part": "snippet",
+        "q": query + " fitness exercise workout tutorial",
+        "type": "video",
+        "maxResults": max_results,
+        "key": YOUTUBE_API_KEY,
+        "safeSearch": "strict",
+        "relevanceLanguage": "fr",
+        "videoDuration": "medium"  # Eviter les vidéos trop courtes
+    }
+    url = f"{endpoint}?{urllib.parse.urlencode(params)}"
+    try:
+        with urllib.request.urlopen(url) as resp:
+            items = json.loads(resp.read().decode()).get("items", [])
+    except Exception as e:
+        st.error(f"YouTube error: {e}")
+        return []
+    return [
+        (it["snippet"]["title"], f"https://www.youtube.com/watch?v={it['id']['videoId']}")
+        for it in items
+    ]
 
 # Charger l'avatar SVG une seule fois
 def get_avatar_html(size=30, mood="zen"):
@@ -45,7 +85,7 @@ def get_avatar_html(size=30, mood="zen"):
         fallback = {"zen": "🧘", "peaceful": "😌", "thinking": "🤔", "happy": "😊"}
         return f'<span style="font-size:{size}px; margin-right:8px;">{fallback.get(mood, "🧘")}</span>'
 
-# Styles CSS originaux avec juste un ajout pour le sélecteur
+# Styles CSS originaux avec juste un ajout pour le sélecteur + YouTube
 st.markdown("""
 <style>
 /* ==================== PALETTE LAVANDE & AIGUE-MARINE ==================== */
@@ -208,6 +248,33 @@ st.markdown("""
     font-size: 0.7rem;
     font-weight: 600;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Style pour les vidéos YouTube */
+.youtube-container {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border: 2px solid var(--saumon-orange);
+    box-shadow: 
+        0 10px 25px rgba(255, 160, 122, 0.3),
+        inset 0 1px 3px rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+}
+
+.youtube-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+    color: var(--texte-fonce);
+    font-weight: 600;
+}
+
+.youtube-icon {
+    color: #FF0000;
+    font-size: 1.5rem;
 }
 
 @keyframes gentle-glow {
@@ -545,7 +612,7 @@ def display_header():
             <span class="header-avatar">{avatar_html}</span>
             Coach Fitness IA
         </h1>
-        <p>Votre accompagnateur bien-être personnalisé avec IA multi-modèles</p>
+        <p>Votre accompagnateur bien-être personnalisé avec IA multi-modèles + Vidéos YouTube</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -637,6 +704,22 @@ def display_sidebar():
         else:
             st.error("❌ Modèles non disponibles")
         
+        # === OPTION YOUTUBE ===
+        st.markdown("---")
+        st.markdown("#### 📺 Vidéos YouTube")
+        
+        # === OPTION YOUTUBE ===
+        st.markdown("---")
+        st.markdown("#### 📺 Vidéos YouTube")
+        
+        enable_youtube = st.checkbox("Recherche automatique de vidéos", value=True)
+        
+        if YOUTUBE_API_KEY:
+            st.success("🔑 API YouTube configurée")
+        else:
+            st.warning("⚠️ Clé API YouTube manquante")
+            st.caption("Ajoutez YOUTUBE_API_KEY dans votre .env")
+        
         # Profil utilisateur
         st.markdown("---")
         st.markdown("#### 🧘 Votre Profil")
@@ -674,7 +757,8 @@ def display_sidebar():
             "fitness_level": fitness_level,
             "goal": goal if goal else None,
             "available_time": available_time,
-            "equipment": equipment
+            "equipment": equipment,
+            "enable_youtube": enable_youtube
         }
         
         # État de l'API
@@ -707,8 +791,22 @@ def display_sidebar():
             st.session_state.messages = []
             st.rerun()
 
+def display_youtube_video(title: str, url: str):
+    """Affiche une vidéo YouTube dans un container stylisé"""
+    st.markdown(f"""
+    <div class="youtube-container">
+        <div class="youtube-header">
+            <span class="youtube-icon">📺</span>
+            <span>Vidéo recommandée : {title[:60]}{'...' if len(title) > 60 else ''}</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Afficher la vidéo YouTube
+    st.video(url)
+
 def display_chat():
-    """Affiche l'interface de chat avec style zen et avatars SVG"""
+    """Affiche l'interface de chat avec style zen et avatars SVG + YouTube"""
     
     # Zone de messages
     chat_container = st.container()
@@ -729,7 +827,8 @@ def display_chat():
                      Bienvenue dans votre espace bien-être multi-modèles
                 </h2>
                 <p style="font-size: 1.2rem; color: #00CED1; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
-                    Un coaching fitness avec IA sélectionnable : DistilGPT-2 🇫🇷 ou PlayPart AI 🇺🇸
+                    Un coaching fitness avec IA sélectionnable : DistilGPT-2 🇫🇷 ou PlayPart AI 🇺🇸<br>
+                    + Vidéos YouTube automatiques 📺
                 </p>
             """, unsafe_allow_html=True)
             
@@ -781,7 +880,7 @@ def display_chat():
                             color: white; 
                             font-weight: 500;
                         ">
-                            💆 "Recovery and rest"
+                            💆 "Recovery and rest" + 📺 vidéo
                         </div>
                     </div>
                 </div>
@@ -826,6 +925,13 @@ def display_chat():
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
+                
+                # Afficher la vidéo YouTube si présente
+                if "youtube_url" in message and message["youtube_url"]:
+                    display_youtube_video(
+                        message.get("youtube_title", "Vidéo d'exercice"),
+                        message["youtube_url"]
+                    )
     
     # Zone de saisie avec form pour ENTRÉE
     st.markdown("---")
@@ -914,7 +1020,7 @@ def display_chat():
                 
                 response_time = time.time() - start_time
         
-        # Ajouter réponse du bot
+        # Préparer la réponse du bot
         bot_message = {
             "role": "assistant",
             "content": response.get("response", "Erreur de réponse"),
@@ -924,6 +1030,45 @@ def display_chat():
             "confidence": response.get("confidence", "serein"),
             "timestamp": datetime.now()
         }
+        
+        # Recherche YouTube si activée
+        if st.session_state.user_profile.get("enable_youtube", False) and YOUTUBE_API_KEY:
+            with st.spinner("📺 Recherche de vidéos YouTube..."):
+                try:
+                    # Créer une requête de recherche adaptée
+                    search_query = user_input
+                    
+                    # Ajouter des mots-clés selon le contenu
+                    fitness_keywords = []
+                    if any(word in user_input.lower() for word in ["push", "pompes", "pushup"]):
+                        fitness_keywords.append("push-ups tutorial")
+                    elif any(word in user_input.lower() for word in ["squat", "squats"]):
+                        fitness_keywords.append("squat technique")
+                    elif any(word in user_input.lower() for word in ["cardio", "running", "course"]):
+                        fitness_keywords.append("cardio workout")
+                    elif any(word in user_input.lower() for word in ["yoga", "stretching", "étirement"]):
+                        fitness_keywords.append("yoga stretching")
+                    elif any(word in user_input.lower() for word in ["abs", "abdos", "core"]):
+                        fitness_keywords.append("abs workout")
+                    elif any(word in user_input.lower() for word in ["upper body", "haut du corps"]):
+                        fitness_keywords.append("upper body workout")
+                    else:
+                        fitness_keywords.append("fitness exercise")
+                    
+                    # Rechercher sur YouTube
+                    search_term = f"{search_query} {' '.join(fitness_keywords)}"
+                    videos = search_youtube(search_term, max_results=1)
+                    
+                    if videos:
+                        video_title, video_url = videos[0]
+                        bot_message["youtube_url"] = video_url
+                        bot_message["youtube_title"] = video_title
+                        
+                        # Mentionner la vidéo dans la réponse
+                        bot_message["content"] += f"\n\n📺 J'ai trouvé une vidéo qui pourrait vous aider !"
+                        
+                except Exception as e:
+                    st.warning(f"⚠️ Erreur recherche YouTube : {e}")
         
         st.session_state.messages.append(bot_message)
         
@@ -997,7 +1142,7 @@ def display_stats():
         pass
 
 def main():
-    """Fonction principale de l'application Zen Multi-Modèles"""
+    """Fonction principale de l'application Zen Multi-Modèles + YouTube"""
     
     # Initialisation
     init_session_state()
@@ -1025,19 +1170,20 @@ def main():
         backdrop-filter: blur(10px);
     ">
         <h3 style="margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.1);">
-            🌸 Coach Fitness IA • Édition Multi-Modèles
+            🌸 Coach Fitness IA • Édition Multi-Modèles + YouTube
         </h3>
         <p style="font-size: 1rem; margin: 0.5rem 0; color: #00CED1;">
-            🇫🇷 DistilGPT-2 Fine-Tuné + 🇺🇸 PlayPart AI Personal Trainer + RAG • Intelligence Artificielle Bienveillante
+            🇫🇷 DistilGPT-2 Fine-Tuné + 🇺🇸 PlayPart AI Personal Trainer + RAG + 📺 YouTube • IA Bienveillante
         </p>
         <p style="font-size: 0.9rem; opacity: 0.8; color: #50C878;">
-            Sélection Simple • Palette Lavande & Aigue-marine • Design Harmonieux
+            Sélection Simple • Vidéos Automatiques • Palette Lavande & Aigue-marine • Design Harmonieux
         </p>
         <div style="margin-top: 1.5rem; font-size: 1.5rem; opacity: 0.6;">
-            🌸 🤖 🌿 🌺 🌙 🌟
+            🌸 🤖 📺 🌿 🌺 🌙 🌟
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
+
