@@ -10,7 +10,7 @@ streamlit==1.28.1
 # ================================
 # IA & MACHINE LEARNING
 # ================================
-torch>=2.0.0,<2.2.0
+torch>=2.2.0 # MODIFICATION ICI : Assouplissement de la contrainte de version
 transformers>=4.35.0,<4.40.0
 sentence-transformers>=2.2.2,<2.3.0
 faiss-cpu>=1.7.4,<1.8.0

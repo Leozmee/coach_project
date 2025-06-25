@@ -1,4 +1,4 @@
-# streamlit_app/main.py - Version avec Avatar SVG intégré
+# streamlit_app/main.py - Version avec sélecteur simple, style préservé
 
 import streamlit as st
 import requests
@@ -12,7 +12,7 @@ from avatar_component import display_zen_avatar, get_contextual_avatar, load_svg
 
 # Configuration de la page
 st.set_page_config(
-    page_title="🏋️ Coach Fitness IA",
+    page_title="🏋️ Coach Fitness IA - Multi-Modèles",
     page_icon="🏋️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -45,7 +45,7 @@ def get_avatar_html(size=30, mood="zen"):
         fallback = {"zen": "🧘", "peaceful": "😌", "thinking": "🤔", "happy": "😊"}
         return f'<span style="font-size:{size}px; margin-right:8px;">{fallback.get(mood, "🧘")}</span>'
 
-# Styles CSS modifiés pour intégrer l'avatar SVG
+# Styles CSS originaux avec juste un ajout pour le sélecteur
 st.markdown("""
 <style>
 /* ==================== PALETTE LAVANDE & AIGUE-MARINE ==================== */
@@ -53,6 +53,7 @@ st.markdown("""
     --lavande-principal: #9370DB;
     --aigue-marine: #00CED1;
     --saumon-orange: #FFA07A;
+    --emeraude: #50C878;
     --fond-clair: #F8F8F8;
     --texte-fonce: #333333;
     --lavande-clair: rgba(147, 112, 219, 0.1);
@@ -157,6 +158,11 @@ st.markdown("""
     backdrop-filter: blur(5px);
 }
 
+/* Style spécial pour PlayPart AI */
+.bot-message.playpart {
+    background: linear-gradient(135deg, var(--emeraude) 0%, #66D98C 100%);
+}
+
 .bot-avatar-bubble {
     position: absolute;
     top: 15px;
@@ -175,6 +181,10 @@ st.markdown("""
     overflow: hidden;
 }
 
+.bot-avatar-bubble.playpart {
+    background: linear-gradient(45deg, var(--emeraude), #66D98C);
+}
+
 .bot-avatar-bubble img {
     width: 24px !important;
     height: 24px !important;
@@ -184,6 +194,20 @@ st.markdown("""
     padding: 0 !important;
     display: block !important;
     vertical-align: middle !important;
+}
+
+/* Indicateur de modèle utilisé */
+.model-indicator {
+    position: absolute;
+    top: -8px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--texte-fonce);
+    padding: 0.2rem 0.8rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 @keyframes gentle-glow {
@@ -276,6 +300,21 @@ st.markdown("""
     font-style: italic;
 }
 
+/* Selectbox avec style harmonieux */
+.stSelectbox > div > div > div {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 2px solid var(--emeraude);
+    border-radius: 20px;
+    color: var(--texte-fonce);
+}
+
+.stSelectbox > div > div > div:focus-within {
+    border-color: var(--lavande-principal);
+    box-shadow: 
+        0 0 20px rgba(80, 200, 120, 0.3),
+        0 0 40px rgba(147, 112, 219, 0.2);
+}
+
 /* Boutons avec douceur */
 .stButton > button {
     background: linear-gradient(45deg, var(--aigue-marine), var(--saumon-orange));
@@ -323,9 +362,6 @@ st.markdown("""
         0 0 20px rgba(147, 112, 219, 0.2);
     border-color: var(--lavande-principal);
 }
-
-/* Suppression de la barre en haut */
-/* .metric-container::after - SUPPRIMÉ */
 
 .metric-container h4 {
     margin: 0 0 1rem 0;
@@ -414,7 +450,7 @@ MAX_RETRIES = 3
 TIMEOUT = 30
 
 class FitnessAPI:
-    """Client pour l'API Coach Fitness"""
+    """Client pour l'API Coach Fitness avec support multi-modèles"""
     
     def __init__(self, base_url: str = API_BASE_URL):
         self.base_url = base_url
@@ -431,12 +467,39 @@ class FitnessAPI:
             st.error(f"❌ Erreur API: {e}")
             return {}
     
-    def chat(self, message: str, profile: Optional[Dict] = None) -> Dict[str, Any]:
+    def get_available_models(self) -> Dict[str, Any]:
+        """Récupère la liste des modèles disponibles"""
+        try:
+            response = self.session.get(f"{self.base_url}/models")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            st.error(f"❌ Erreur récupération modèles: {e}")
+            return {}
+    
+    def switch_model(self, model_type: str) -> Dict[str, Any]:
+        """Change le modèle actuel"""
+        try:
+            payload = {"model_type": model_type}
+            response = self.session.post(
+                f"{self.base_url}/models/switch",
+                json=payload,
+                headers={"Content-Type": "application/json"}
+            )
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            st.error(f"❌ Erreur changement modèle: {e}")
+            return {"success": False, "message": str(e)}
+    
+    def chat(self, message: str, profile: Optional[Dict] = None, model_type: Optional[str] = None) -> Dict[str, Any]:
         """Envoie un message au chatbot"""
         try:
             payload = {"message": message}
             if profile:
                 payload["profile"] = profile
+            if model_type:
+                payload["model_type"] = model_type
             
             response = self.session.post(
                 f"{self.base_url}/chat",
@@ -450,6 +513,7 @@ class FitnessAPI:
             return {
                 "response": "Désolé, je ne peux pas répondre en ce moment. Vérifiez que l'API est en cours d'exécution.",
                 "model_used": "error",
+                "model_name": "Erreur",
                 "response_time": 0.0
             }
 
@@ -463,6 +527,12 @@ def init_session_state():
     
     if "user_profile" not in st.session_state:
         st.session_state.user_profile = {}
+    
+    if "current_model" not in st.session_state:
+        st.session_state.current_model = "local_distilgpt2"
+    
+    if "available_models" not in st.session_state:
+        st.session_state.available_models = {}
 
 def display_header():
     """Affiche l'en-tête principal avec avatar SVG"""
@@ -475,9 +545,25 @@ def display_header():
             <span class="header-avatar">{avatar_html}</span>
             Coach Fitness IA
         </h1>
-        <p>Votre accompagnateur bien-être personnalisé</p>
+        <p>Votre accompagnateur bien-être personnalisé avec IA multi-modèles</p>
     </div>
     """, unsafe_allow_html=True)
+
+def get_model_display_name(model_used: str) -> str:
+    """Retourne le nom d'affichage du modèle"""
+    model_names = {
+        "local_distilgpt2": "DistilGPT-2 🇫🇷",
+        "playpart_trainer": "PlayPart AI 🇺🇸",
+        "fallback_local_distilgpt2": "Fallback DistilGPT-2 🇫🇷",
+        "fallback_playpart_trainer": "Fallback PlayPart AI 🇺🇸"
+    }
+    return model_names.get(model_used, model_used)
+
+def get_model_chat_class(model_used: str) -> str:
+    """Retourne la classe CSS selon le modèle utilisé"""
+    if "playpart" in model_used.lower():
+        return "playpart"
+    return ""
 
 def display_sidebar():
     """Affiche la sidebar avec les paramètres"""
@@ -486,7 +572,73 @@ def display_sidebar():
         # Avatar dans la sidebar
         display_zen_avatar(mood="zen", size=60, position="center")
         
+        # === SÉLECTEUR DE MODÈLE SIMPLE ===
+        st.markdown("---")
+        st.markdown("#### 🤖 Sélection du Modèle IA")
+        
+        # Récupérer les modèles disponibles
+        models_data = st.session_state.api_client.get_available_models()
+        
+        if models_data and "models" in models_data:
+            st.session_state.available_models = models_data["models"]
+            st.session_state.current_model = models_data["current_model"]
+            
+            # Options pour le selectbox
+            model_options = []
+            model_mapping = {}
+            
+            for model_key, model_info in models_data["models"].items():
+                if model_info.get("loaded", False):
+                    display_name = f"{model_info['name']}"
+                    if "distilgpt2" in model_key.lower():
+                        display_name += " 🇫🇷"
+                    elif "playpart" in model_key.lower():
+                        display_name += " 🇺🇸"
+                    
+                    model_options.append(display_name)
+                    model_mapping[display_name] = model_key
+            
+            # Trouver l'index actuel
+            current_display = None
+            for display_name, key in model_mapping.items():
+                if key == models_data["current_model"]:
+                    current_display = display_name
+                    break
+            
+            current_index = model_options.index(current_display) if current_display in model_options else 0
+            
+            # Selectbox simple
+            selected_model = st.selectbox(
+                "Choisir le modèle :",
+                model_options,
+                index=current_index,
+                key="model_selector"
+            )
+            
+            # Changer le modèle si différent
+            if selected_model in model_mapping:
+                selected_key = model_mapping[selected_model]
+                if selected_key != st.session_state.current_model:
+                    with st.spinner(f"🔄 Changement vers {selected_model}..."):
+                        result = st.session_state.api_client.switch_model(selected_key)
+                        
+                        if result.get("success", False):
+                            st.session_state.current_model = selected_key
+                            st.success(f"✅ Modèle changé !")
+                            time.sleep(1)  # Petite pause pour voir le message
+                            st.rerun()
+                        else:
+                            st.error(f"❌ {result.get('message', 'Erreur changement modèle')}")
+            
+            # Info modèle actuel
+            current_info = models_data["models"].get(models_data["current_model"], {})
+            st.info(f"🎯 **Actuel** : {current_info.get('name', 'Unknown')}")
+            
+        else:
+            st.error("❌ Modèles non disponibles")
+        
         # Profil utilisateur
+        st.markdown("---")
         st.markdown("#### 🧘 Votre Profil")
         
         age = st.slider("Âge", 15, 80, 25)
@@ -532,12 +684,18 @@ def display_sidebar():
         health = st.session_state.api_client.health_check()
         if health:
             status = health.get("status", "unknown")
-            model_loaded = health.get("model_loaded", False)
+            current_model_info = health.get("models", {}).get(health.get("current_model", ""), {})
             
-            if status == "healthy" and model_loaded:
+            if status == "healthy":
                 st.success("🌟 Système harmonieux")
-                st.info(f"🤖 IA: En éveil")
-                st.info(f"📱 Processeur: {health.get('device', 'unknown')}")
+                st.info(f"🤖 IA: {current_model_info.get('name', 'Unknown')}")
+                st.info(f"📱 Device: {health.get('device', 'unknown')}")
+                
+                # Statut des modèles
+                for model_key, model_info in health.get("models", {}).items():
+                    icon = "✅" if model_info.get("loaded", False) else "⏳"
+                    name = model_info.get("name", model_key)[:15] + "..."
+                    st.caption(f"{icon} {name}")
             else:
                 st.warning("🌤️ Système en transition")
         else:
@@ -568,10 +726,10 @@ def display_chat():
                 backdrop-filter: blur(10px);
             ">
                 <h2 style="color: #9370DB; text-shadow: 1px 1px 3px rgba(0,0,0,0.2);">
-                     Bienvenue dans votre espace bien-être
+                     Bienvenue dans votre espace bien-être multi-modèles
                 </h2>
                 <p style="font-size: 1.2rem; color: #00CED1; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
-                    Un coaching fitness doux et bienveillant, adapté à votre rythme
+                    Un coaching fitness avec IA sélectionnable : DistilGPT-2 🇫🇷 ou PlayPart AI 🇺🇸
                 </p>
             """, unsafe_allow_html=True)
             
@@ -581,7 +739,7 @@ def display_chat():
             st.markdown("""
                 <div style="margin-top: 2.5rem;">
                     <p style="color: #9370DB; font-size: 1.1rem; font-weight: 500;">
-                        🌺 Questions bien-être :
+                        🌺 Questions adaptées aux modèles :
                     </p>
                     <div style="
                         display: grid; 
@@ -596,7 +754,16 @@ def display_chat():
                             color: white; 
                             font-weight: 500;
                         ">
-                            🧘 "Exercices de relaxation"
+                            🇫🇷 "Exercices de relaxation" (DistilGPT-2)
+                        </div>
+                        <div style="
+                            background: linear-gradient(135deg, #50C878, rgba(80,200,120,0.8)); 
+                            padding: 1.3rem; 
+                            border-radius: 20px; 
+                            color: white; 
+                            font-weight: 500;
+                        ">
+                            🇺🇸 "Upper body strength training" (PlayPart AI)
                         </div>
                         <div style="
                             background: linear-gradient(135deg, #9370DB, rgba(147,112,219,0.8)); 
@@ -614,23 +781,14 @@ def display_chat():
                             color: white; 
                             font-weight: 500;
                         ">
-                            💆 "Récupération douce"
-                        </div>
-                        <div style="
-                            background: linear-gradient(135deg, #00CED1, rgba(0,206,209,0.8)); 
-                            padding: 1.3rem; 
-                            border-radius: 20px; 
-                            color: white; 
-                            font-weight: 500;
-                        ">
-                            🌸 "Routine matinale"
+                            💆 "Recovery and rest"
                         </div>
                     </div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
         
-        # Afficher l'historique des messages avec avatars SVG
+        # Afficher l'historique des messages avec avatars SVG et indicateurs de modèle
         for message in st.session_state.messages:
             if message["role"] == "user":
                 st.markdown(f"""
@@ -643,11 +801,16 @@ def display_chat():
                 avatar_config = get_contextual_avatar(message["content"])
                 avatar_html = get_avatar_html(size=24, mood=avatar_config["mood"])
                 
+                # Classes CSS selon le modèle utilisé
+                model_class = get_model_chat_class(message.get("model_used", ""))
+                model_display = get_model_display_name(message.get("model_used", "unknown"))
+                
                 st.markdown(f"""
-                <div class="bot-message">
-                    <div class="bot-avatar-bubble">
+                <div class="bot-message {model_class}">
+                    <div class="bot-avatar-bubble {model_class}">
                         {avatar_html}
                     </div>
+                    <div class="model-indicator">{model_display}</div>
                     <strong>Coach Bien-être :</strong> {message["content"]}
                     <div style="
                         opacity: 0.8; 
@@ -657,7 +820,7 @@ def display_chat():
                         padding-top: 0.8rem;
                     ">
                         ⚡ {message.get("response_time", 0):.2f}s | 
-                        🌸 {message.get("model_used", "unknown")} | 
+                        🌸 {message.get("model_name", "unknown")} | 
                         🎯 {message.get("confidence", "serein")} | 
                         💫 Harmonieux
                     </div>
@@ -709,6 +872,17 @@ def display_chat():
                 </style>
                 """, unsafe_allow_html=True)
         
+        with col2:
+            # Afficher le modèle qui sera utilisé
+            current_model_info = st.session_state.available_models.get(st.session_state.current_model, {})
+            model_name = current_model_info.get('name', 'Unknown')
+            if "distilgpt2" in st.session_state.current_model.lower():
+                st.info(f"🇫🇷 Utilise : {model_name}")
+            elif "playpart" in st.session_state.current_model.lower():
+                st.info(f"🇺🇸 Utilise : {model_name}")
+            else:
+                st.info(f"🤖 Utilise : {model_name}")
+    
     # Traitement du message si form soumis
     if send_button and user_input.strip():
         
@@ -727,13 +901,15 @@ def display_chat():
         
         with col_spinner:
             # Indicateur de chargement zen
-            with st.spinner("🌸 Réflexion bienveillante en cours..."):
+            current_model_name = st.session_state.available_models.get(st.session_state.current_model, {}).get('name', 'IA')
+            with st.spinner(f"🌸 Réflexion bienveillante avec {current_model_name}..."):
                 start_time = time.time()
                 
-                # Appel API
+                # Appel API avec le modèle actuellement sélectionné
                 response = st.session_state.api_client.chat(
                     user_input, 
-                    st.session_state.user_profile
+                    st.session_state.user_profile,
+                    None  # Utilise le modèle actuel défini côté API
                 )
                 
                 response_time = time.time() - start_time
@@ -743,6 +919,7 @@ def display_chat():
             "role": "assistant",
             "content": response.get("response", "Erreur de réponse"),
             "model_used": response.get("model_used", "unknown"),
+            "model_name": response.get("model_name", "Unknown AI"),
             "response_time": response.get("response_time", response_time),
             "confidence": response.get("confidence", "serein"),
             "timestamp": datetime.now()
@@ -762,7 +939,7 @@ def display_stats():
             stats = response.json()
             
             st.markdown("---")
-            st.markdown("### 📊 Métriques de Bien-être")
+            st.markdown("### 📊 Métriques de Bien-être Multi-Modèles")
             
             col1, col2, col3, col4 = st.columns(4)
             
@@ -791,17 +968,36 @@ def display_stats():
                 """, unsafe_allow_html=True)
             
             with col4:
+                current_model_name = stats.get('models', {}).get(stats.get('current_model', ''), {}).get('name', 'Unknown')[:15]
                 st.markdown(f"""
                 <div class="metric-container">
-                    <h4>🌺 État IA</h4>
-                    <h2>{'🌸' if stats.get('model_loaded') else '🌿'}</h2>
+                    <h4>🤖 IA Actuelle</h4>
+                    <h2 style="font-size: 1.5rem;">{current_model_name}</h2>
                 </div>
                 """, unsafe_allow_html=True)
+            
+            # Statistiques d'usage par modèle si disponible
+            if stats.get('model_usage', {}):
+                st.markdown("#### 📈 Usage par Modèle")
+                usage_data = stats['model_usage']
+                
+                col1, col2 = st.columns(2)
+                
+                for i, (model_key, usage_count) in enumerate(usage_data.items()):
+                    model_name = stats.get('models', {}).get(model_key, {}).get('name', model_key)
+                    
+                    with col1 if i % 2 == 0 else col2:
+                        st.markdown(f"""
+                        <div class="metric-container" style="padding: 1rem;">
+                            <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;">{model_name}</h4>
+                            <h2 style="font-size: 1.8rem;">{usage_count}</h2>
+                        </div>
+                        """, unsafe_allow_html=True)
     except:
         pass
 
 def main():
-    """Fonction principale de l'application Zen"""
+    """Fonction principale de l'application Zen Multi-Modèles"""
     
     # Initialisation
     init_session_state()
@@ -829,16 +1025,16 @@ def main():
         backdrop-filter: blur(10px);
     ">
         <h3 style="margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.1);">
-            🌸 Coach Fitness IA • Édition Bien-être
+            🌸 Coach Fitness IA • Édition Multi-Modèles
         </h3>
         <p style="font-size: 1rem; margin: 0.5rem 0; color: #00CED1;">
-            Propulsé par DistilGPT-2 Fine-Tuné • Intelligence Artificielle Bienveillante
+            🇫🇷 DistilGPT-2 Fine-Tuné + 🇺🇸 PlayPart AI Personal Trainer + RAG • Intelligence Artificielle Bienveillante
         </p>
-        <p style="font-size: 0.9rem; opacity: 0.8; color: #FFA07A;">
-            Palette Lavande & Aigue-marine • Design Harmonieux
+        <p style="font-size: 0.9rem; opacity: 0.8; color: #50C878;">
+            Sélection Simple • Palette Lavande & Aigue-marine • Design Harmonieux
         </p>
         <div style="margin-top: 1.5rem; font-size: 1.5rem; opacity: 0.6;">
-            🌸 🌿 🌺 🌙 🌟
+            🌸 🤖 🌿 🌺 🌙 🌟
         </div>
     </div>
     """, unsafe_allow_html=True)
