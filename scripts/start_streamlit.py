@@ -6,6 +6,10 @@ import subprocess
 from pathlib import Path
 import requests
 import time
+# scripts/start_api.py (en haut du fichier)
+from dotenv import load_dotenv
+load_dotenv()
+
 
 def check_api_status():
     """Vérifie que l'API est accessible"""

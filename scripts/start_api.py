@@ -6,6 +6,11 @@ import subprocess
 import time
 from pathlib import Path
 
+# scripts/start_api.py (en haut du fichier)
+from dotenv import load_dotenv
+load_dotenv()
+
+
 def check_requirements():
     """Vérifie que les dépendances sont installées"""
     
