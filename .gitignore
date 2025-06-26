@@ -229,9 +229,6 @@ $RECYCLE.BIN/
 jupyter_notebook_config.py
 .jupyter/
 
-# Checkpoint files
-*-checkpoint.ipynb
-Untitled*.ipynb
 
 # ================================
 # TESTS ET QUALITÉ CODE
