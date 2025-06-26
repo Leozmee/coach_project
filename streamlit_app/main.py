@@ -450,15 +450,9 @@ def display_chat():
                     Un coaching fitness avec IA sélectionnable : DistilGPT-2 🇫🇷 ou PlayPart AI 🇺🇸<br>
                     + Vidéos YouTube automatiques 📺
                 </p>
-            """, unsafe_allow_html=True)
-            
-            # Avatar de bienvenue
-            display_zen_avatar(mood="peaceful", size=120, position="center")
-            
-            st.markdown("""
                 <div style="margin-top: 2.5rem;">
                     <p style="color: #9370DB; font-size: 1.1rem; font-weight: 500;">
-                        🌺 Questions adaptées aux modèles :
+                         Questions adaptées aux modèles :
                     </p>
                     <div style="
                         display: grid; 
@@ -473,7 +467,7 @@ def display_chat():
                             color: white; 
                             font-weight: 500;
                         ">
-                            🇫🇷 "Exercices de relaxation" (DistilGPT-2)
+                            🇫🇷 "Exercices de relaxation" 
                         </div>
                         <div style="
                             background: linear-gradient(135deg, #50C878, rgba(80,200,120,0.8)); 
@@ -482,7 +476,7 @@ def display_chat():
                             color: white; 
                             font-weight: 500;
                         ">
-                            🇺🇸 "Upper body strength training" (PlayPart AI)
+                            🇺🇸 "Upper body strength training" 
                         </div>
                         <div style="
                             background: linear-gradient(135deg, #9370DB, rgba(147,112,219,0.8)); 
@@ -491,7 +485,7 @@ def display_chat():
                             color: white; 
                             font-weight: 500;
                         ">
-                            🌿 "Nutrition équilibrée"
+                            🇫🇷 "Comment adopter une nutrition équilibrée"
                         </div>
                         <div style="
                             background: linear-gradient(135deg, #FFA07A, rgba(255,160,122,0.8)); 
@@ -500,7 +494,7 @@ def display_chat():
                             color: white; 
                             font-weight: 500;
                         ">
-                            💆 "Recovery and rest" + 📺 vidéo
+                            🇺🇸 "How to perform burpees correctly" 
                         </div>
                     </div>
                 </div>
@@ -773,15 +767,12 @@ def main():
         <h3 style="margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.1);">
             🌸 Coach Fitness IA • Édition Multi-Modèles + YouTube
         </h3>
-        <p style="font-size: 1rem; margin: 0.5rem 0; color: #00CED1;">
+        <p style="font-size: 1rem; margin: 0.5rem 0; color: #00999C;">
             🇫🇷 DistilGPT-2 Fine-Tuné + 🇺🇸 PlayPart AI Personal Trainer + RAG + 📺 YouTube • IA Bienveillante
         </p>
-        <p style="font-size: 0.9rem; opacity: 0.8; color: #50C878;">
-            Sélection Simple • Vidéos Automatiques • Palette Lavande & Aigue-marine • Design Harmonieux
+        <p style="font-size: 0.9rem; opacity: 0.8; color: ##006669;">
+            By Maxime & Léo © 
         </p>
-        <div style="margin-top: 1.5rem; font-size: 1.5rem; opacity: 0.6;">
-            🌸 🤖 📺 🌿 🌺 🌙 🌟
-        </div>
     </div>
     """, unsafe_allow_html=True)
 

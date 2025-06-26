@@ -1,4 +1,4 @@
-/* streamlit_app/styles.css - Styles pour Coach Fitness IA Multi-Modèles */
+/* streamlit_app/styles.css - Styles corrigés pour Coach Fitness IA Multi-Modèles */
 
 /* ==================== PALETTE LAVANDE & AIGUE-MARINE ==================== */
 :root {
@@ -252,32 +252,74 @@
     100% { background-position: 400% 50%; }
 }
 
-/* Input avec style apaisant - FOND BLANC SIMPLE */
-.stTextInput > div > div > input {
-    background: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(10px);
-    border: 2px solid var(--aigue-marine);
-    border-radius: 20px;
-    color: var(--texte-fonce);
-    font-size: 1.1rem;
-    padding: 1rem 1.2rem;
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    font-weight: 400;
+/* ==================== CORRECTION INPUT SEARCH BAR ==================== */
+
+/* Supprimer tous les styles par défaut qui causent les bordures noires */
+.stTextInput {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
 }
 
-.stTextInput > div > div > input:focus {
-    border-color: var(--lavande-principal);
+.stTextInput > div {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.stTextInput > div > div {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+/* Style principal de l'input - CORRIGÉ */
+.stTextInput > div > div > input {
     background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--aigue-marine) !important;
+    border-radius: 20px !important;
+    color: var(--texte-fonce) !important;
+    font-size: 1.1rem !important;
+    padding: 1rem 1.2rem !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    font-weight: 400 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    line-height: 1.5 !important;
+}
+
+/* Focus state - CORRIGÉ */
+.stTextInput > div > div > input:focus {
+    border-color: var(--lavande-principal) !important;
+    background: rgba(255, 255, 255, 1) !important;
     box-shadow: 
         0 0 20px rgba(0, 206, 209, 0.3),
-        0 0 40px rgba(147, 112, 219, 0.2);
-    transform: scale(1.02);
+        0 0 40px rgba(147, 112, 219, 0.2) !important;
+    transform: scale(1.02) !important;
+    outline: none !important;
 }
 
+/* Placeholder style */
 .stTextInput > div > div > input::placeholder {
-    color: rgba(147, 112, 219, 0.6);
-    font-style: italic;
+    color: rgba(147, 112, 219, 0.6) !important;
+    font-style: italic !important;
+    opacity: 1 !important;
 }
+
+/* Supprimer l'autofill background jaune */
+.stTextInput > div > div > input:-webkit-autofill,
+.stTextInput > div > div > input:-webkit-autofill:hover,
+.stTextInput > div > div > input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.98) inset !important;
+    -webkit-text-fill-color: var(--texte-fonce) !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+}
+
+/* ==================== FIN CORRECTION INPUT ==================== */
 
 /* Selectbox avec style harmonieux */
 .stSelectbox > div > div > div {
