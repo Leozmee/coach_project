@@ -1,4 +1,4 @@
-# api/fitness_service.py - Version corrigée complète pour PlayPart AI
+# api/fitness_service.py - Version complète corrigée
 
 import os
 import logging
@@ -79,7 +79,7 @@ class FitnessCoachService:
             'model_usage': {model.value: 0 for model in ModelType}
         }
         
-        # Configuration génération par modèle - AMÉLIORÉE
+        # Configuration génération par modèle
         self.generation_configs = {
             ModelType.LOCAL_DISTILGPT2: {
                 'max_new_tokens': 150,
@@ -91,17 +91,17 @@ class FitnessCoachService:
                 'no_repeat_ngram_size': 3
             },
             ModelType.PLAYPART_TRAINER: {
-                'max_new_tokens': 60,    # Encore plus court
-                'temperature': 0.5,      # Plus déterministe
+                'max_new_tokens': 60,
+                'temperature': 0.5,
                 'do_sample': True,
-                'top_p': 0.7,           # Plus restrictif
-                'top_k': 25,            # Plus restrictif
-                'repetition_penalty': 1.4,  # Plus élevé
+                'top_p': 0.7,
+                'top_k': 25,
+                'repetition_penalty': 1.4,
                 'no_repeat_ngram_size': 2,
                 'pad_token_id': 50256,
                 'eos_token_id': 50256,
                 'early_stopping': True,
-                'length_penalty': 1.2   # Favorise réponses courtes
+                'length_penalty': 1.2
             }
         }
         
@@ -120,7 +120,7 @@ class FitnessCoachService:
         return device
     
     def _initialize_service(self):
-        """Initialise le service avec le modèle par défaut"""
+        """Initialise le service avec TOUS les modèles"""
         start_time = datetime.now()
         
         try:
@@ -131,8 +131,25 @@ class FitnessCoachService:
                 logger.info("📊 Chargement du système RAG...")
                 self._load_rag()
             
-            # Charger le modèle par défaut
-            self._load_model(self.current_model)
+            # Charger tous les modèles disponibles
+            logger.info("🤖 Chargement de tous les modèles...")
+            
+            # 1. Charger le modèle local (DistilGPT-2)
+            self._load_model(ModelType.LOCAL_DISTILGPT2)
+            
+            # 2. Charger PlayPart AI (même si erreur, on continue)
+            try:
+                self._load_model(ModelType.PLAYPART_TRAINER)
+            except Exception as e:
+                logger.warning(f"⚠️ PlayPart AI non chargé: {e}")
+            
+            # Vérifier qu'au moins un modèle est chargé
+            loaded_models = [name for name, config in self.model_configs.items() if config["loaded"]]
+            
+            if not loaded_models:
+                raise Exception("Aucun modèle n'a pu être chargé")
+            
+            logger.info(f"✅ Modèles chargés: {[self.model_configs[m]['name'] for m in loaded_models]}")
             
             self.initialization_time = (datetime.now() - start_time).total_seconds()
             logger.info(f"✅ Service multi-modèles initialisé en {self.initialization_time:.2f}s")
@@ -143,15 +160,25 @@ class FitnessCoachService:
             self.initialization_error = error_msg
     
     def _load_model(self, model_type: ModelType) -> bool:
-        """Charge un modèle spécifique"""
+        """Charge un modèle spécifique avec gestion d'erreurs améliorée"""
         try:
             config = self.model_configs[model_type]
             logger.info(f"🤖 Chargement {config['name']}...")
             
             if model_type == ModelType.LOCAL_DISTILGPT2:
-                return self._load_local_distilgpt2()
+                success = self._load_local_distilgpt2()
             elif model_type == ModelType.PLAYPART_TRAINER:
-                return self._load_playpart_trainer()
+                success = self._load_playpart_trainer()
+            else:
+                logger.error(f"❌ Type de modèle inconnu: {model_type}")
+                return False
+            
+            if success:
+                logger.info(f"✅ {config['name']} chargé avec succès")
+            else:
+                logger.error(f"❌ Échec du chargement de {config['name']}")
+            
+            return success
             
         except Exception as e:
             logger.error(f"❌ Erreur chargement {model_type}: {e}")
@@ -184,20 +211,36 @@ class FitnessCoachService:
             self.tokenizers[ModelType.LOCAL_DISTILGPT2] = tokenizer
             self.model_configs[ModelType.LOCAL_DISTILGPT2]["loaded"] = True
             
-            logger.info("✅ Modèle DistilGPT-2 local chargé")
             return True
             
         except Exception as e:
             logger.error(f"❌ Erreur DistilGPT-2 local: {e}")
+            self.model_configs[ModelType.LOCAL_DISTILGPT2]["loaded"] = False
             return False
     
     def _load_playpart_trainer(self) -> bool:
-        """Charge le modèle PlayPart AI Personal Trainer avec améliorations"""
+        """Charge le modèle PlayPart AI Personal Trainer avec gestion d'erreurs renforcée"""
         try:
             logger.info("📥 Téléchargement PlayPart AI Personal Trainer...")
             
-            # Tokenizer GPT-2 standard sans modifications
-            tokenizer = GPT2Tokenizer.from_pretrained("Lukamac/PlayPart-AI-Personal-Trainer")
+            # Test de connectivité d'abord
+            import requests
+            try:
+                response = requests.get("https://huggingface.co", timeout=10)
+                if response.status_code != 200:
+                    logger.error("❌ Pas de connexion à HuggingFace")
+                    return False
+            except:
+                logger.error("❌ Problème de connexion réseau")
+                return False
+            
+            # Tokenizer GPT-2 standard
+            tokenizer = GPT2Tokenizer.from_pretrained(
+                "Lukamac/PlayPart-AI-Personal-Trainer",
+                resume_download=True,
+                force_download=False,
+                local_files_only=False
+            )
             tokenizer.pad_token = tokenizer.eos_token
             tokenizer.pad_token_id = tokenizer.eos_token_id
             
@@ -205,7 +248,10 @@ class FitnessCoachService:
             model = GPT2LMHeadModel.from_pretrained(
                 "Lukamac/PlayPart-AI-Personal-Trainer",
                 torch_dtype=torch.float16 if self.device.type == "cuda" else torch.float32,
-                pad_token_id=tokenizer.eos_token_id
+                pad_token_id=tokenizer.eos_token_id,
+                resume_download=True,
+                force_download=False,
+                local_files_only=False
             )
             
             model.to(self.device)
@@ -216,11 +262,11 @@ class FitnessCoachService:
             self.tokenizers[ModelType.PLAYPART_TRAINER] = tokenizer
             self.model_configs[ModelType.PLAYPART_TRAINER]["loaded"] = True
             
-            logger.info("✅ PlayPart AI Personal Trainer chargé")
             return True
             
         except Exception as e:
             logger.error(f"❌ Erreur PlayPart Trainer: {e}")
+            self.model_configs[ModelType.PLAYPART_TRAINER]["loaded"] = False
             return False
     
     def switch_model(self, model_type: ModelType) -> Dict[str, Any]:
@@ -230,6 +276,7 @@ class FitnessCoachService:
             
             # Vérifier si le modèle est déjà chargé
             if not self.model_configs[model_type]["loaded"]:
+                logger.info(f"⏳ Modèle {model_type} non chargé, tentative de chargement...")
                 success = self._load_model(model_type)
                 if not success:
                     return {
@@ -673,7 +720,7 @@ Answer:"""
         }
     
     def get_service_stats(self) -> Dict[str, Any]:
-        """Statistiques du service"""
+        """Statistiques du service - MÉTHODE MANQUANTE AJOUTÉE"""
         return {
             'status': 'healthy' if any(config["loaded"] for config in self.model_configs.values()) else 'degraded',
             'models': self.model_configs,
