@@ -696,7 +696,9 @@ def handle_user_query(user_input: str):
             bot_msg["youtube_title"] = title
             bot_msg["youtube_url"]   = url
             bot_msg["content"] += "\n\n📺 J’ai trouvé une vidéo pour vous !"
-    # 5️⃣ push & rerun
+    # 5️⃣ clear audio & push & rerun
+    if "voice" in st.session_state:
+        del st.session_state["voice"]   # **important** pour stopper la boucle
     st.session_state.messages.append(bot_msg)
     st.rerun()
 
