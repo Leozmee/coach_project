@@ -257,13 +257,12 @@ def get_model_chat_class(model_used: str) -> str:
     return ""
 
 def display_sidebar():
-    """Affiche la sidebar avec l'image push-to-talk comme bouton cliquable uniquement"""
+    """Affiche la sidebar avec l'image push-to-talk comme bouton cliquable simplifié"""
     with st.sidebar:
         
-        # === IMAGE DU ROBOT COACH + BOUTON PUSH-TO-TALK IMAGE ===
+        # === IMAGE DU ROBOT COACH ===
         current_dir = Path(__file__).parent
         robot_image_path = current_dir / "assets" / "robot_coach.png"
-        push_to_talk_path = current_dir / "assets" / "push_to_talk.png"
         
         if robot_image_path.exists():
             # Affichage de l'image robot
@@ -272,86 +271,36 @@ def display_sidebar():
                 st.image(
                     str(robot_image_path), 
                     width=200,
-                    caption="🤖 Coach IA Personnel"
+                    caption="Coach IA Personnel"
                 )
             
-            # === BOUTON PUSH-TO-TALK AVEC IMAGE SEULEMENT ===
-            if push_to_talk_path.exists():
-                # Convertir l'image en base64
-                import base64
-                with open(push_to_talk_path, "rb") as img_file:
-                    img_base64 = base64.b64encode(img_file.read()).decode()
-                
-                # Image comme bouton cliquable
-                st.markdown(f"""
-                <div style="text-align: center; margin: 1rem 0;">
-                    <div 
-                        onclick="alert(' Fonctionnalité vocale en développement !\\n\\nBientôt disponible :\\n• Reconnaissance vocale\\n• Conversion speech-to-text\\n• Envoi automatique')"
-                        style="
-                            cursor: pointer;
-                            padding: 15px;
-                            border-radius: 20px;
-                            transition: all 0.3s ease;
-                            background: linear-gradient(135deg, rgba(147,112,219,0.1), rgba(0,206,209,0.1));
-                            border: 2px solid transparent;
-                            display: inline-block;
-                            box-shadow: 0 4px 15px rgba(147,112,219,0.2);
-                        "
-                        onmouseover="
-                            this.style.transform='scale(1.1)'; 
-                            this.style.borderColor='#9370DB'; 
-                            this.style.boxShadow='0 8px 30px rgba(147,112,219,0.4)';
-                        "
-                        onmouseout="
-                            this.style.transform='scale(1)'; 
-                            this.style.borderColor='transparent'; 
-                            this.style.boxShadow='0 4px 15px rgba(147,112,219,0.2)';
-                        "
-                        onmousedown="this.style.transform='scale(0.95)';"
-                        onmouseup="this.style.transform='scale(1.1)';"
-                        title="🎤 Cliquez pour la reconnaissance vocale"
-                    >
-                        <img src="data:image/png;base64,{img_base64}" 
-                             style="
-                                width: 100px; 
-                                height: auto; 
-                                display: block; 
-                                margin: 0 auto;
-                                filter: drop-shadow(0 2px 8px rgba(147,112,219,0.3));
-                             " 
-                             alt="Push to Talk" />
-                        <p style="
-                            color: #9370DB; 
-                            font-size: 0.9rem; 
-                            margin: 0.8rem 0 0 0; 
-                            font-weight: 600;
-                            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-                        "> Push to Talk</p>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                        
-            else:
-                # Fallback si l'image n'existe pas
-                st.markdown("""
-                <div style="text-align: center; margin: 1rem 0;">
-                    <div style="
-                        padding: 15px;
-                        border: 2px dashed #9370DB;
-                        border-radius: 20px;
-                        background: rgba(147,112,219,0.1);
-                    ">
-                        <p style="color: #9370DB; margin: 0;">
-                            📁 Ajoutez push_to_talk.png dans assets/
-                        </p>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+            # === BOUTON PUSH-TO-TALK SIMPLIFIÉ ===
+            st.markdown("<div style='margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
             
-            st.markdown("<div style='margin: 1rem 0;'></div>", unsafe_allow_html=True)
+            # Bouton centré simple avec callback
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                if st.button(
+                    "Push to Talk🎤", 
+                    key="voice_button",
+                    help="Reconnaissance vocale (en développement)",
+                    use_container_width=True
+                ):
+                    st.info("🚧 **Fonctionnalité en développement**\n\nBientôt disponible :\n- Reconnaissance vocale\n- Conversion speech-to-text\n- Envoi automatique")
+                    
         else:
             # Fallback simple si pas d'image robot
             display_zen_avatar(mood="zen", size=60, position="center")
+            
+            # Bouton sans image robot
+            st.markdown("<div style='margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
+            if st.button(
+                "🎤  Push to Talk", 
+                key="voice_button_fallback",
+                help="Reconnaissance vocale (en développement)",
+                use_container_width=True
+            ):
+                st.info("🚧 **Fonctionnalité en développement**\n\nBientôt disponible :\n- Reconnaissance vocale\n- Conversion speech-to-text\n- Envoi automatique")
         
         # === SÉLECTEUR DE MODÈLE SIMPLE ===
         st.markdown("---")
@@ -526,14 +475,14 @@ def display_chat():
             st.markdown("""
             <div style="
                 text-align: center; 
-                padding: 3rem; 
+                padding: 1.5rem; 
                 background: linear-gradient(135deg, rgba(147,112,219,0.1), rgba(0,206,209,0.1)); 
                 border-radius: 30px; 
-                margin: 2rem 0; 
+                margin: 1rem 0; 
                 border: 2px solid rgba(0,206,209,0.3); 
                 backdrop-filter: blur(10px);
             ">
-                <div style="margin-top: 2.5rem;">
+                <div style="margin-top: 0.5rem;">
                     <p style="color: #9370DB; font-size: 1.1rem; font-weight: 500;">
                          Questions adaptées aux modèles :
                     </p>
@@ -541,7 +490,7 @@ def display_chat():
                         display: grid; 
                         grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
                         gap: 1.2rem; 
-                        margin-top: 1.5rem;
+                        margin-top: 0rem;
                     ">
                         <div style="
                             background: linear-gradient(135deg, #00CED1, rgba(0,206,209,0.8)); 
