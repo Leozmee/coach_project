@@ -257,13 +257,32 @@ def get_model_chat_class(model_used: str) -> str:
     return ""
 
 def display_sidebar():
-    """Affiche la sidebar avec les paramètres"""
+    """Affiche la sidebar avec les paramètres et l'image du robot coach - Version avec image plus grande"""
     with st.sidebar:
         
-        # Avatar dans la sidebar
-        display_zen_avatar(mood="zen", size=60, position="center")
+        # === IMAGE DU ROBOT COACH - VERSION AGRANDIE ===
+        current_dir = Path(__file__).parent
+        robot_image_path = current_dir / "assets" / "robot_coach.png"
         
-        # === SÉLECTEUR DE MODÈLE SIMPLE ===
+        if robot_image_path.exists():
+            # Affichage simple et propre avec image plus grande
+            col1, col2, col3 = st.columns([0.5, 3, 0.5])  # Colonnes ajustées pour plus d'espace
+            with col2:
+                st.image(
+                    str(robot_image_path), 
+                    width=200,  # Augmenté de 150 à 200
+                    caption="🤖 Coach IA Personnel"
+                )
+            
+            st.markdown("""
+            <div style="text-align: center; margin-bottom: 1rem;">
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            # Fallback simple
+            display_zen_avatar(mood="zen", size=60, position="center")
+        
+        # Le reste du code reste identique...
         st.markdown("---")
         st.markdown("#### 🤖 Sélection du Modèle IA")
         
@@ -765,7 +784,7 @@ def main():
         backdrop-filter: blur(10px);
     ">
         <h3 style="margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.1);">
-            🌸 Coach Fitness IA • Édition Multi-Modèles + YouTube
+             Coach Fitness IA • Édition Multi-Modèles + YouTube
         </h3>
         <p style="font-size: 1rem; margin: 0.5rem 0; color: #00999C;">
             🇫🇷 DistilGPT-2 Fine-Tuné + 🇺🇸 PlayPart AI Personal Trainer + RAG + 📺 YouTube • IA Bienveillante
