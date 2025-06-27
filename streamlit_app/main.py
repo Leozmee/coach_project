@@ -1,4 +1,4 @@
-# streamlit_app/main.py - Version avec CSS externe + Whisper intégré
+# streamlit_app/main.py - Version avec CSS externe + Whisper + Corrections complètes
 
 import streamlit as st
 import requests
@@ -270,7 +270,7 @@ def get_model_chat_class(model_used: str) -> str:
     return ""
 
 def display_sidebar():
-    """Affiche la sidebar avec l'image push-to-talk comme bouton cliquable simplifié"""
+    """Affiche la sidebar avec bouton vocal centré et stylé"""
     with st.sidebar:
         
         # === IMAGE DU ROBOT COACH ===
@@ -287,19 +287,35 @@ def display_sidebar():
                     caption="Coach IA Personnel"
                 )
             
-            # === BOUTON PUSH-TO-TALK AVEC WHISPER ===
-            st.markdown("<div style='margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
+            # === BOUTON VOCAL CENTRÉ ET STYLÉ ===
+            st.markdown("<div style='margin: 0.5rem 0;'></div>", unsafe_allow_html=True)
             
-            # === RECONNAISSANCE VOCALE TOUJOURS VISIBLE ===
-            st.markdown("#### 🎤 Reconnaissance Vocale")
-            
-            # Afficher le composant audio recorder TOUJOURS (pas seulement après clic)
-            audio_segment = audiorecorder(
-                "🎤 Cliquez et parlez", 
-                "🔴 Relâchez pour transcrire",
-                key="voice_recorder",
-                show_visualizer=True
-            )
+            # Composant audio centré avec style arrondi
+            col1, col2, col3 = st.columns([0.3, 1.4, 0.3])
+            with col2:
+                # CSS pour arrondir le bouton audio
+                st.markdown("""
+                <style>
+                /* Style pour arrondir le bouton d'enregistrement */
+                .streamlit-audiorecorder button {
+                    border-radius: 25px !important;
+                    border: 2px solid #9370DB !important;
+                    padding: 8px 16px !important;
+                    font-weight: 500 !important;
+                }
+                .streamlit-audiorecorder button:hover {
+                    background: linear-gradient(135deg, #9370DB, #00CED1) !important;
+                    color: white !important;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+                
+                audio_segment = audiorecorder(
+                    "🎤 Cliquez et parlez", 
+                    "🔴 Relâchez pour transcrire",
+                    key="voice_recorder",
+                    show_visualizer=True
+                )
             
             # Traitement de l'audio si enregistré
             if audio_segment and len(audio_segment) > 0:
@@ -327,9 +343,10 @@ def display_sidebar():
                             
                             if transcribed_text:
                                 st.success(f"🎯 Transcrit : \"{transcribed_text}\"")
-                                # Stocker le texte transcrit dans session_state
+                                # Stocker le texte transcrit ET déclencher l'envoi automatique
                                 st.session_state.voice_input = transcribed_text
-                                # Ne PAS faire st.rerun() ici - laisser Streamlit se rafraîchir naturellement
+                                st.session_state.auto_send = True 
+                                st.session_state.auto_send = True  # Flag pour envoi auto
                             else:
                                 st.warning("⚠️ Aucun texte détecté dans l'audio")
                                 
@@ -342,14 +359,8 @@ def display_sidebar():
             # Fallback simple si pas d'image robot
             display_zen_avatar(mood="zen", size=60, position="center")
             
-            # === BOUTON VOCAL CENTRÉ ET STYLÉ ===
+            # === BOUTON VOCAL CENTRÉ ET STYLÉ (FALLBACK) ===
             st.markdown("<div style='margin: 0.5rem 0;'></div>", unsafe_allow_html=True)
-            
-            # Conteneur centré pour le bouton vocal
-            st.markdown("""
-            <div style="display: flex; justify-content: center; margin: 0.5rem 0;">
-            </div>
-            """, unsafe_allow_html=True)
             
             # Composant audio centré avec style arrondi
             col1, col2, col3 = st.columns([0.3, 1.4, 0.3])
@@ -406,7 +417,7 @@ def display_sidebar():
                                 st.success(f"🎯 Transcrit : \"{transcribed_text}\"")
                                 # Stocker le texte transcrit ET déclencher l'envoi automatique
                                 st.session_state.voice_input = transcribed_text
-                                st.session_state.auto_send = True  # Nouveau flag pour envoi auto
+                                st.session_state.auto_send = True  # Flag pour envoi auto
                             else:
                                 st.warning("⚠️ Aucun texte détecté dans l'audio")
                                 
@@ -509,9 +520,6 @@ def display_sidebar():
             equipment.append("tapis")
         if st.checkbox("Ballon de fitness"):
             equipment.append("ballon")
-        
-        # === OPTION YOUTUBE (SUPPRIMÉE) ===
-        # Section YouTube supprimée pour désencombrer la sidebar
         
         # Mettre à jour le profil avec YouTube activé par défaut
         st.session_state.user_profile = {
@@ -676,7 +684,7 @@ def display_chat():
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Afficher la vidéo YouTube si présente
+  # Afficher la vidéo YouTube si présente
                 if "youtube_url" in message and message["youtube_url"]:
                     display_youtube_video(
                         message.get("youtube_title", "Vidéo d'exercice"),
@@ -725,7 +733,7 @@ def display_chat():
             else:
                 st.info(f"🤖 Utilise : {model_name}")
     
-    # Debug : Afficher l'état vocal
+    # Debug : Afficher l'état vocal seulement si pas d'envoi auto
     if voice_input and not auto_send:
         st.info(f"🎤 Texte vocal détecté : \"{voice_input}\" - Cliquez sur Envoyer pour traiter !")
     
