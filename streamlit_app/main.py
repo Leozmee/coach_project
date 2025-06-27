@@ -100,18 +100,19 @@ def search_youtube(query: str, max_results: int = 1):
 
 # Charger l'avatar SVG une seule fois
 def get_avatar_html(size=30, mood="zen"):
-    """Génère le HTML pour l'avatar SVG inline"""
+    """Génère le HTML pour l'avatar SVG inline avec support couleur violette"""
     current_dir = Path(__file__).parent
     svg_path = current_dir / "assets" / "avatar.svg"
     svg_base64 = load_svg_as_base64(str(svg_path))
     
     if svg_base64:
-        # Filtres selon l'humeur
+        # Filtres selon l'humeur avec violet personnalisé
         mood_filters = {
             "zen": "hue-rotate(0deg) brightness(1) saturate(1)",
             "peaceful": "hue-rotate(30deg) brightness(1.1) saturate(0.8)",
             "thinking": "hue-rotate(-30deg) brightness(0.9) saturate(1.2)",
-            "happy": "hue-rotate(60deg) brightness(1.2) saturate(1.3)"
+            "happy": "hue-rotate(60deg) brightness(1.2) saturate(1.3)",
+            "purple_header": "sepia(1) hue-rotate(250deg) saturate(2) brightness(1.1)"  # Violet mauve doux
         }
         
         filter_style = mood_filters.get(mood, mood_filters["zen"])
@@ -121,10 +122,16 @@ def get_avatar_html(size=30, mood="zen"):
                           border-radius:50%; vertical-align:middle; margin-right:8px;" 
                    alt="Avatar {mood}" />'''
     else:
-        # Fallback emoji
-        fallback = {"zen": "🧘", "peaceful": "😌", "thinking": "🤔", "happy": "😊"}
-        return f'<span style="font-size:{size}px; margin-right:8px;">{fallback.get(mood, "🧘")}</span>'
-
+        # Fallback emoji avec violet pour le header
+        fallback = {
+            "zen": "🧘", 
+            "peaceful": "😌", 
+            "thinking": "🤔", 
+            "happy": "😊",
+            "purple_header": "🤖"  # Robot violet pour le header
+        }
+        return f'<span style="font-size:{size}px; margin-right:8px; color: #9370DB;">{fallback.get(mood, "🧘")}</span>'
+    
 # Configuration API
 API_BASE_URL = "http://127.0.0.1:8001"
 MAX_RETRIES = 3
@@ -241,7 +248,7 @@ def add_dynamic_button_styles(svg_base64):
 def display_header():
     """Affiche l'en-tête principal avec avatar SVG"""
     # Générer l'avatar HTML pour le header (plus gros)
-    avatar_html = get_avatar_html(size=120, mood="happy")
+    avatar_html = get_avatar_html(size=120, mood="purple_header")
     
     st.markdown(f"""
     <div class="main-header">
