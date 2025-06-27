@@ -42,3 +42,4 @@ python scripts/start_streamlit.py
 - Profils utilisateurs personnalisés
 - Dashboard fitness interactif
 - Réponses en français optimisées
+- Recommandations de tutos vidéo
