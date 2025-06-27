@@ -1,198 +1,230 @@
-# requirements.txt - Dépendances complètes du projet Fitness Coach
+# requirements.txt - Mis à jour selon pip list actuel
+# Généré automatiquement le 27/6/2025
 
 # ================================
 # CORE FRAMEWORKS
 # ================================
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-streamlit==1.28.1
+
+# CORE
+fastapi==0.115.13
+uvicorn==0.34.3
+streamlit==1.46.0
 
 # ================================
 # IA & MACHINE LEARNING
 # ================================
-torch>=2.2.0 # MODIFICATION ICI : Assouplissement de la contrainte de version
-transformers>=4.35.0,<4.40.0
-sentence-transformers>=2.2.2,<2.3.0
-faiss-cpu>=1.7.4,<1.8.0
-numpy>=1.24.0,<1.26.0
+
+# AI
+torch==2.7.1
+transformers==4.52.4
+sentence-transformers==4.1.0
+faiss-cpu==1.11.0
+openai-whisper==20250625
+tiktoken==0.9.0
+tokenizers==0.21.2
+safetensors==0.5.3
+huggingface-hub==0.33.0
 
 # ================================
 # DATA PROCESSING
 # ================================
-pandas>=2.0.0,<2.2.0
-datasets>=2.14.0,<2.16.0
+
+# DATA
+pandas==2.3.0
+numpy==2.2.6
+scipy==1.15.3
+scikit-learn==1.7.0
+pyarrow==20.0.0
 
 # ================================
-# API & WEB
+# AUDIO & STREAMING
 # ================================
-pydantic>=2.4.0,<2.6.0
-pydantic-settings>=2.0.0,<2.2.0
-python-multipart>=0.0.6
-aiofiles>=23.2.0,<24.0.0
-requests>=2.31.0,<2.32.0
-httpx>=0.25.0,<0.26.0
+
+# AUDIO
+streamlit-audiorecorder==0.0.6
+streamlit-webrtc==0.63.1
+pydub==0.25.1
+aioice==0.10.1
+aiortc==1.13.0
+av==14.4.0
+pyee==13.0.0
+pylibsrtp==0.12.0
+
+# ================================
+# WEB & HTTP
+# ================================
+
+# WEB
+requests==2.32.4
+urllib3==2.5.0
+certifi==2025.6.15
+charset-normalizer==3.4.2
+idna==3.10
+
+# ================================
+# STREAMLIT UI
+# ================================
+
+# STREAMLIT_UI
+altair==5.5.0
+pydeck==0.9.1
+pillow==11.2.1
+blinker==1.9.0
+
+# ================================
+# API & VALIDATION
+# ================================
+
+# API
+pydantic==2.11.7
+pydantic_core==2.33.2
+starlette==0.46.2
+h11==0.16.0
+anyio==4.9.0
+sniffio==1.3.1
 
 # ================================
 # UTILITIES
 # ================================
-python-dotenv>=1.0.0,<1.1.0
-tqdm>=4.66.0,<4.67.0
-rich>=13.6.0,<13.8.0
-click>=8.1.0,<8.2.0
+
+# UTILS
+python-dotenv==1.1.1
+dotenv==0.9.9
+tqdm==4.67.1
+click==8.2.1
+toml==0.10.2
+PyYAML==6.0.2
 
 # ================================
-# STREAMLIT COMPONENTS
-# ================================
-streamlit-chat>=0.1.1
-streamlit-option-menu>=0.3.6
-plotly>=5.17.0,<5.18.0
-altair>=5.1.0,<5.2.0
-
-# ================================
-# DEVELOPMENT & TESTING
-# ================================
-pytest>=7.4.0,<7.5.0
-pytest-asyncio>=0.21.0,<0.22.0
-black>=23.9.0,<23.11.0
-isort>=5.12.0,<5.13.0
-flake8>=6.1.0,<6.2.0
-
-# ================================
-# LOGGING & MONITORING
-# ================================
-loguru>=0.7.2,<0.8.0
-python-json-logger>=2.0.7,<2.1.0
-
-# ================================
-# SECURITY
-# ================================
-python-jose[cryptography]>=3.3.0,<3.4.0
-passlib[bcrypt]>=1.7.4,<1.8.0
-
-# ================================
-# OPTIONAL: PRODUCTION DEPLOYMENT
-# ================================
-gunicorn>=21.2.0,<21.3.0
-psutil>=5.9.0,<5.10.0
-
-# ================================
-# OPTIONAL: DEVELOPMENT TOOLS
-# ================================
-jupyter>=1.0.0,<1.1.0
-ipykernel>=6.25.0,<6.26.0
-ipywidgets>=8.1.0,<8.2.0
-
-# ================================
-# VERSION PINNING POUR STABILITÉ
-# ================================
-# Certaines versions sont épinglées pour éviter les conflits
-
-# Tokenizers (requis par transformers)
-tokenizers>=0.14.0,<0.15.0
-
-# Hugging Face Hub
-huggingface-hub>=0.17.0,<0.18.0
-
-# YAML parsing
-PyYAML>=6.0.1,<6.1.0
-
-# JSON handling
-orjson>=3.9.0,<3.10.0
-
-# Date/time utilities
-python-dateutil>=2.8.2,<2.9.0
-
-# File handling
-pathlib2>=2.3.7,<2.4.0;python_version<"3.4"
-
-# Progress bars
-alive-progress>=3.1.0,<3.2.0
-
-# Configuration management
-configparser>=6.0.0,<6.1.0
-
-# ================================
-# SYSTÈME D'EXPLOITATION SPÉCIFIQUE
+# SYSTEM DEPENDENCIES
 # ================================
 
-# Windows uniquement
-pywin32>=306;platform_system=="Windows"
-wmi>=1.5.1;platform_system=="Windows"
-
-# Linux uniquement  
-python-systemd>=235;platform_system=="Linux"
+# SYSTEM
+packaging==25.0
+filelock==3.18.0
+fsspec==2025.5.1
+watchdog==6.0.0
 
 # ================================
-# EXTRAS POUR FONCTIONNALITÉS AVANCÉES
+# DEVELOPMENT TOOLS
 # ================================
 
-# Support GPU (optionnel - décommentez si GPU disponible)
-# torch>=2.0.0+cu118 --index-url https://download.pytorch.org/whl/cu118
+# DEV
+GitPython==3.1.44
+gitdb==4.0.12
+smmap==5.0.2
+claude-code==0.0.1
 
-# Base de données (pour futures fonctionnalités)
-# sqlite3  # Inclus dans Python standard
-# sqlalchemy>=2.0.0,<2.1.0
+# ================================
+# AUTRES DÉPENDANCES
+# ================================
+annotated-types==0.7.0
+attrs==25.3.0
+cachetools==6.1.0
+cffi==1.17.1
+cryptography==45.0.4
+dnspython==2.7.0
+exceptiongroup==1.3.0
+google-crc32c==1.7.1
+hf-xet==1.1.5
+ifaddr==0.2.0
+Jinja2==3.1.6
+joblib==1.5.1
+jsonschema==4.24.0
+jsonschema-specifications==2025.4.1
+llvmlite==0.44.0
+MarkupSafe==3.0.2
+more-itertools==10.7.0
+mpmath==1.3.0
+narwhals==1.44.0
+networkx==3.4.2
+numba==0.61.2
+protobuf==6.31.1
+pycparser==2.22
+pyOpenSSL==25.1.0
+python-dateutil==2.9.0.post0
+pytz==2025.2
+referencing==0.36.2
+regex==2024.11.6
+rpds-py==0.25.1
+six==1.17.0
+sympy==1.14.0
+tenacity==9.1.2
+threadpoolctl==3.6.0
+tornado==6.5.1
+triton==3.3.1
+typing_extensions==4.14.0
+typing-inspection==0.4.1
+tzdata==2025.2
 
-# Cache Redis (optionnel)
-# redis>=5.0.0,<5.1.0
-# redis-py-cluster>=2.1.0,<2.2.0
-
-# Monitoring avancé (optionnel)
-# prometheus-client>=0.17.0,<0.18.0
-# grafana-api>=1.0.0,<1.1.0
+# ================================
+# NVIDIA CUDA PACKAGES (auto-installées avec torch)
+# ================================
+# Ces packages sont installés automatiquement avec PyTorch CUDA
+# nvidia-cublas-cu12==12.6.4.1
+# nvidia-cuda-cupti-cu12==12.6.80
+# nvidia-cuda-nvrtc-cu12==12.6.77
+# nvidia-cuda-runtime-cu12==12.6.77
+# nvidia-cudnn-cu12==9.5.1.17
+# nvidia-cufft-cu12==11.3.0.4
+# nvidia-cufile-cu12==1.11.1.6
+# nvidia-curand-cu12==10.3.7.77
+# nvidia-cusolver-cu12==11.7.1.2
+# nvidia-cusparse-cu12==12.5.4.2
+# nvidia-cusparselt-cu12==0.6.3
+# nvidia-nccl-cu12==2.26.2
+# nvidia-nvjitlink-cu12==12.6.85
+# nvidia-nvtx-cu12==12.6.77
+# triton==3.3.1
 
 # ================================
 # NOTES D'INSTALLATION
 # ================================
-
-# Pour installer avec GPU support (CUDA):
-# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-
-# Pour installation complète avec extras:
+# Installation complète :
 # pip install -r requirements.txt
 
-# Pour développement seulement:
-# pip install -r requirements.txt --no-deps
+# Pour réinstaller exactement les mêmes versions :
+# pip install -r requirements.txt --force-reinstall
 
-# Pour production (versions épinglées):
-# pip install -r requirements.txt --no-upgrade
+# Vérification des versions installées :
+# pip list
+
+# ================================
+# PACKAGES MANQUANTS NOTABLES
+# ================================
+# Si vous voulez ajouter des fonctionnalités :
+
+# Pour les tests :
+# pytest>=7.4.0
+# pytest-asyncio>=0.21.0
+
+# Pour le formatting de code :
+# black>=23.9.0
+# isort>=5.12.0
+# flake8>=6.1.0
+
+# Pour le logging :
+# loguru>=0.7.2
+
+# Pour la sécurité :
+# python-jose[cryptography]>=3.3.0
+# passlib[bcrypt]>=1.7.4
 
 # ================================
 # COMMANDES UTILES
 # ================================
 
-# Générer un fichier requirements.txt mis à jour:
-# pip freeze > requirements-freeze.txt
+# Générer requirements.txt depuis l'environnement actuel :
+# pip freeze > requirements-current.txt
 
-# Vérifier les vulnérabilités:
-# pip audit
+# Comparer avec la version précédente :
+# diff requirements.txt requirements-current.txt
 
-# Mettre à jour tous les packages:
-# pip list --outdated
+# Installer en mode développement :
+# pip install -e .
+
+# Mettre à jour un package spécifique :
 # pip install --upgrade package_name
 
-# ================================
-# DÉPENDANCES PAR COMPOSANT
-# ================================
-
-# API FastAPI minimale:
-# fastapi, uvicorn, pydantic, python-multipart
-
-# IA/ML minimale:
-# torch, transformers, sentence-transformers, faiss-cpu
-
-# Streamlit minimale:
-# streamlit, pandas, plotly, requests
-
-# Testing minimal:
-# pytest, pytest-asyncio
-
-# ================================
-# TAILLES APPROXIMATIVES
-# ================================
-
-# Total: ~2.5GB (avec PyTorch CPU)
-# PyTorch: ~800MB
-# Transformers: ~200MB  
-# Streamlit: ~100MB
-# Autres: ~400MB
+# Vérifier les vulnérabilités :
+# pip audit
