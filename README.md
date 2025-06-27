@@ -1,4 +1,4 @@
-# 🏋️ Fitness Coach IA - Streamlit + API
+# 🏋️ Coach fitness IA 
 
 Coach fitness intelligent basé sur DistilGPT-2 fine-tuné avec interface Streamlit.
 
