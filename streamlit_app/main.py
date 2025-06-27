@@ -1,4 +1,4 @@
-# streamlit_app/main.py - Version avec CSS externe
+# streamlit_app/main.py - Version avec CSS externe + Whisper intégré
 
 import streamlit as st
 import requests
@@ -13,6 +13,19 @@ import logging
 from pathlib import Path
 from dotenv import load_dotenv
 from avatar_component import display_zen_avatar, get_contextual_avatar, load_svg_as_base64
+
+# ───────────────────────────────────────────────────
+# AJOUT WHISPER - Imports et cache
+# ───────────────────────────────────────────────────
+from audiorecorder import audiorecorder  # pip install streamlit-audiorecorder
+import whisper
+
+@st.cache_resource
+def get_whisper_model():
+    """Charge le modèle Whisper une seule fois (cache pour les reruns)"""
+    return whisper.load_model("base")  # ou "small" si GPU limité
+
+WHISPER_MODEL = get_whisper_model()
 
 # Configuration de la page
 st.set_page_config(
@@ -274,33 +287,133 @@ def display_sidebar():
                     caption="Coach IA Personnel"
                 )
             
-            # === BOUTON PUSH-TO-TALK SIMPLIFIÉ ===
+            # === BOUTON PUSH-TO-TALK AVEC WHISPER ===
             st.markdown("<div style='margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
             
-            # Bouton centré simple avec callback
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                if st.button(
-                    "Push to Talk🎤", 
-                    key="voice_button",
-                    help="Reconnaissance vocale (en développement)",
-                    use_container_width=True
-                ):
-                    st.info("🚧 **Fonctionnalité en développement**\n\nBientôt disponible :\n- Reconnaissance vocale\n- Conversion speech-to-text\n- Envoi automatique")
+            # === RECONNAISSANCE VOCALE TOUJOURS VISIBLE ===
+            st.markdown("#### 🎤 Reconnaissance Vocale")
+            
+            # Afficher le composant audio recorder TOUJOURS (pas seulement après clic)
+            audio_segment = audiorecorder(
+                "🎤 Cliquez et parlez", 
+                "🔴 Relâchez pour transcrire",
+                key="voice_recorder",
+                show_visualizer=True
+            )
+            
+            # Traitement de l'audio si enregistré
+            if audio_segment and len(audio_segment) > 0:
+                # Vérifier si on a déjà traité cet audio (éviter la boucle infinie)
+                audio_hash = hash(str(audio_segment.raw_data))
+                if st.session_state.get("last_audio_hash") != audio_hash:
+                    st.session_state.last_audio_hash = audio_hash
+                    
+                    with st.spinner("🗣️ Transcription avec Whisper..."):
+                        try:
+                            # Sauvegarder l'audio temporairement
+                            audio_segment.export("temp_audio.wav", format="wav")
+                            
+                            # Transcription avec Whisper
+                            transcription = WHISPER_MODEL.transcribe(
+                                "temp_audio.wav", 
+                                language="fr", 
+                                fp16=False
+                            )
+                            transcribed_text = transcription["text"].strip()
+                            
+                            # Nettoyer le fichier temporaire
+                            if os.path.exists("temp_audio.wav"):
+                                os.remove("temp_audio.wav")
+                            
+                            if transcribed_text:
+                                st.success(f"🎯 Transcrit : \"{transcribed_text}\"")
+                                # Stocker le texte transcrit dans session_state
+                                st.session_state.voice_input = transcribed_text
+                                # Ne PAS faire st.rerun() ici - laisser Streamlit se rafraîchir naturellement
+                            else:
+                                st.warning("⚠️ Aucun texte détecté dans l'audio")
+                                
+                        except Exception as e:
+                            st.error(f"❌ Erreur transcription : {e}")
+                            if os.path.exists("temp_audio.wav"):
+                                os.remove("temp_audio.wav")
                     
         else:
             # Fallback simple si pas d'image robot
             display_zen_avatar(mood="zen", size=60, position="center")
             
-            # Bouton sans image robot
-            st.markdown("<div style='margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
-            if st.button(
-                "🎤  Push to Talk", 
-                key="voice_button_fallback",
-                help="Reconnaissance vocale (en développement)",
-                use_container_width=True
-            ):
-                st.info("🚧 **Fonctionnalité en développement**\n\nBientôt disponible :\n- Reconnaissance vocale\n- Conversion speech-to-text\n- Envoi automatique")
+            # === BOUTON VOCAL CENTRÉ ET STYLÉ ===
+            st.markdown("<div style='margin: 0.5rem 0;'></div>", unsafe_allow_html=True)
+            
+            # Conteneur centré pour le bouton vocal
+            st.markdown("""
+            <div style="display: flex; justify-content: center; margin: 0.5rem 0;">
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Composant audio centré avec style arrondi
+            col1, col2, col3 = st.columns([0.3, 1.4, 0.3])
+            with col2:
+                # CSS pour arrondir le bouton audio
+                st.markdown("""
+                <style>
+                /* Style pour arrondir le bouton d'enregistrement */
+                .streamlit-audiorecorder button {
+                    border-radius: 25px !important;
+                    border: 2px solid #9370DB !important;
+                    padding: 8px 16px !important;
+                    font-weight: 500 !important;
+                }
+                .streamlit-audiorecorder button:hover {
+                    background: linear-gradient(135deg, #9370DB, #00CED1) !important;
+                    color: white !important;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+                
+                audio_segment = audiorecorder(
+                    "🎤 Cliquez et parlez", 
+                    "🔴 Relâchez pour transcrire",
+                    key="voice_recorder_fallback",
+                    show_visualizer=True
+                )
+            
+            # Traitement de l'audio si enregistré
+            if audio_segment and len(audio_segment) > 0:
+                # Vérifier si on a déjà traité cet audio (éviter la boucle infinie)
+                audio_hash = hash(str(audio_segment.raw_data))
+                if st.session_state.get("last_audio_hash_fallback") != audio_hash:
+                    st.session_state.last_audio_hash_fallback = audio_hash
+                    
+                    with st.spinner("🗣️ Transcription avec Whisper..."):
+                        try:
+                            # Sauvegarder l'audio temporairement
+                            audio_segment.export("temp_audio.wav", format="wav")
+                            
+                            # Transcription avec Whisper
+                            transcription = WHISPER_MODEL.transcribe(
+                                "temp_audio.wav", 
+                                language="fr", 
+                                fp16=False
+                            )
+                            transcribed_text = transcription["text"].strip()
+                            
+                            # Nettoyer le fichier temporaire
+                            if os.path.exists("temp_audio.wav"):
+                                os.remove("temp_audio.wav")
+                            
+                            if transcribed_text:
+                                st.success(f"🎯 Transcrit : \"{transcribed_text}\"")
+                                # Stocker le texte transcrit ET déclencher l'envoi automatique
+                                st.session_state.voice_input = transcribed_text
+                                st.session_state.auto_send = True  # Nouveau flag pour envoi auto
+                            else:
+                                st.warning("⚠️ Aucun texte détecté dans l'audio")
+                                
+                        except Exception as e:
+                            st.error(f"❌ Erreur transcription : {e}")
+                            if os.path.exists("temp_audio.wav"):
+                                os.remove("temp_audio.wav")
         
         # === SÉLECTEUR DE MODÈLE SIMPLE ===
         st.markdown("---")
@@ -367,18 +480,6 @@ def display_sidebar():
         else:
             st.error("❌ Modèles non disponibles")
         
-        # === OPTION YOUTUBE ===
-        st.markdown("---")
-        st.markdown("#### 📺 Vidéos YouTube")
-        
-        enable_youtube = st.checkbox("Recherche automatique de vidéos", value=True)
-        
-        if YOUTUBE_API_KEY:
-            st.success("🔑 API YouTube configurée")
-        else:
-            st.warning("⚠️ Clé API YouTube manquante")
-            st.caption("Ajoutez YOUTUBE_API_KEY dans votre .env")
-        
         # Profil utilisateur
         st.markdown("---")
         st.markdown("#### 🧘 Votre Profil")
@@ -409,7 +510,10 @@ def display_sidebar():
         if st.checkbox("Ballon de fitness"):
             equipment.append("ballon")
         
-        # Mettre à jour le profil
+        # === OPTION YOUTUBE (SUPPRIMÉE) ===
+        # Section YouTube supprimée pour désencombrer la sidebar
+        
+        # Mettre à jour le profil avec YouTube activé par défaut
         st.session_state.user_profile = {
             "age": age,
             "gender": gender if gender else None,
@@ -417,7 +521,7 @@ def display_sidebar():
             "goal": goal if goal else None,
             "available_time": available_time,
             "equipment": equipment,
-            "enable_youtube": enable_youtube
+            "enable_youtube": True  # Toujours activé, pas d'option dans l'UI
         }
         
         # État de l'API
@@ -582,9 +686,17 @@ def display_chat():
     # Zone de saisie avec form pour ENTRÉE
     st.markdown("---")
     
+    # Vérifier si on a une entrée vocale à traiter ET si envoi automatique est demandé
+    voice_input = st.session_state.get("voice_input", None)
+    auto_send = st.session_state.get("auto_send", False)
+    
     with st.form(key="zen_chat_form", clear_on_submit=True):
+        # Utiliser l'entrée vocale si disponible, sinon champ vide
+        default_value = voice_input if voice_input else ""
+        
         user_input = st.text_input(
             "🌸 Votre question bien-être :",
+            value=default_value,
             placeholder="Partagez vos interrogations sur le bien-être et appuyez sur Entrée... 🌿",
             key="zen_input_form"
         )
@@ -613,8 +725,22 @@ def display_chat():
             else:
                 st.info(f"🤖 Utilise : {model_name}")
     
-    # Traitement du message si form soumis
-    if send_button and user_input.strip():
+    # Debug : Afficher l'état vocal
+    if voice_input and not auto_send:
+        st.info(f"🎤 Texte vocal détecté : \"{voice_input}\" - Cliquez sur Envoyer pour traiter !")
+    
+    # Traitement du message si form soumis OU si envoi automatique demandé
+    if (send_button and user_input.strip()) or (auto_send and voice_input and voice_input.strip()):
+        
+        # Si envoi automatique, utiliser voice_input comme user_input
+        if auto_send and voice_input:
+            user_input = voice_input
+        
+        # Nettoyer l'entrée vocale et le flag auto_send MAINTENANT qu'on traite le message
+        if "voice_input" in st.session_state:
+            del st.session_state.voice_input
+        if "auto_send" in st.session_state:
+            del st.session_state.auto_send
         
         # Ajouter message utilisateur
         st.session_state.messages.append({
@@ -766,7 +892,7 @@ def display_stats():
         pass
 
 def main():
-    """Fonction principale de l'application Zen Multi-Modèles + YouTube"""
+    """Fonction principale de l'application Zen Multi-Modèles + YouTube + Whisper"""
     
     # CHARGER LES STYLES CSS EN PREMIER
     load_external_css()
@@ -797,10 +923,10 @@ def main():
         backdrop-filter: blur(10px);
     ">
         <h3 style="margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.1);">
-             Coach Fitness IA • Édition Multi-Modèles + YouTube
+             Coach Fitness IA • Édition Multi-Modèles + YouTube + Whisper
         </h3>
         <p style="font-size: 1rem; margin: 0.5rem 0; color: #00999C;">
-            🇫🇷 DistilGPT-2 Fine-Tuné + 🇺🇸 PlayPart AI Personal Trainer + RAG + 📺 YouTube • IA Bienveillante
+            🇫🇷 DistilGPT-2 Fine-Tuné + 🇺🇸 PlayPart AI Personal Trainer + RAG + 📺 YouTube + 🎤 Reconnaissance Vocale • IA Bienveillante
         </p>
         <p style="font-size: 0.9rem; opacity: 0.8; color: ##006669;">
             By Maxime & Léo © 
