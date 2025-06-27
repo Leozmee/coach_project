@@ -33,7 +33,7 @@ python scripts/start_streamlit.py
 - `api/` - Backend FastAPI avec votre modèle
 - `streamlit_app/` - Interface utilisateur Streamlit  
 - `models/` - Votre modèle DistilGPT-2 fine-tuné
-- `scripts/` - Scripts de démarrage et utilitaires
+- `scripts/` - Scripts de démarrage 
 
 ## 🎯 Fonctionnalités
 
