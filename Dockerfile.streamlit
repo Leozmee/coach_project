@@ -1,0 +1,69 @@
+# Dockerfile.streamlit - Conteneur pour l'interface Streamlit
+FROM python:3.11-slim
+
+# Variables d'environnement
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+# Installation des dépendances système pour audio (Whisper)
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    ffmpeg \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Créer utilisateur non-root
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Répertoire de travail
+WORKDIR /app
+
+# Copier requirements et installer les dépendances
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Dépendances supplémentaires pour Streamlit
+RUN pip install --no-cache-dir \
+    streamlit-audiorecorder \
+    openai-whisper
+
+# Copier le code de l'application
+COPY streamlit_app/ ./streamlit_app/
+COPY .env .
+
+# Créer le répertoire .streamlit pour la configuration
+RUN mkdir -p .streamlit && \
+    chown -R appuser:appuser /app
+
+# Configuration Streamlit
+RUN echo '[server]\n\
+headless = true\n\
+port = 8501\n\
+address = "0.0.0.0"\n\
+enableCORS = false\n\
+enableXsrfProtection = false\n\
+\n\
+[theme]\n\
+primaryColor = "#FF6B6B"\n\
+backgroundColor = "#0E1117"\n\
+secondaryBackgroundColor = "#262730"\n\
+textColor = "#FAFAFA"\n\
+\n\
+[browser]\n\
+gatherUsageStats = false' > .streamlit/config.toml
+
+# Changer vers l'utilisateur non-root
+USER appuser
+
+# Port exposé
+EXPOSE 8501
+
+# Vérification de santé
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+
+# Commande par défaut
+CMD ["streamlit", "run", "streamlit_app/main.py", "--server.address", "0.0.0.0"]

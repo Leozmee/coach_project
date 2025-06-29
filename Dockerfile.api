@@ -1,0 +1,47 @@
+# Dockerfile.api - Conteneur pour l'API FastAPI
+FROM python:3.11-slim
+
+# Variables d'environnement
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+# Créer utilisateur non-root pour la sécurité
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Installation des dépendances système
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Répertoire de travail
+WORKDIR /app
+
+# Copier les requirements et installer les dépendances Python
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copier le code de l'application
+COPY api/ ./api/
+COPY models/ ./models/
+COPY config/ ./config/
+COPY .env .
+
+# Créer les répertoires nécessaires
+RUN mkdir -p logs && \
+    chown -R appuser:appuser /app
+
+# Changer vers l'utilisateur non-root
+USER appuser
+
+# Port exposé
+EXPOSE 8001
+
+# Vérification de santé
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8001/health || exit 1
+
+# Commande par défaut
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8001"]
