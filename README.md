@@ -14,7 +14,7 @@ Coach fitness intelligent basé sur DistilGPT-2 fine-tuné avec interface Stream
 # Déploiement simple (API + Streamlit)
 ./scripts/docker-deploy.sh deploy
 
-# OU déploiement production avec Nginx
+# Déploiement production avec Nginx
 ./scripts/docker-deploy.sh production
 ```
 
@@ -25,16 +25,13 @@ Coach fitness intelligent basé sur DistilGPT-2 fine-tuné avec interface Stream
 
 #### 4. Gestion des containers
 ```bash
-# Voir l'état des services
+
 ./scripts/docker-deploy.sh status
 
-# Voir les logs
 ./scripts/docker-deploy.sh logs
 
-# Arrêter les services
 ./scripts/docker-deploy.sh stop
 
-# Reconstruction complète
 ./scripts/docker-deploy.sh rebuild
 ```
 
