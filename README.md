@@ -1,4 +1,4 @@
-# 🏋️ Fitness Coach IA - Streamlit + API
+# 🏋️ Coach fitness IA 
 
 Coach fitness intelligent basé sur DistilGPT-2 fine-tuné avec interface Streamlit.
 
@@ -33,7 +33,7 @@ python scripts/start_streamlit.py
 - `api/` - Backend FastAPI avec votre modèle
 - `streamlit_app/` - Interface utilisateur Streamlit  
 - `models/` - Votre modèle DistilGPT-2 fine-tuné
-- `scripts/` - Scripts de démarrage et utilitaires
+- `scripts/` - Scripts de démarrage 
 
 ## 🎯 Fonctionnalités
 
@@ -42,3 +42,4 @@ python scripts/start_streamlit.py
 - Profils utilisateurs personnalisés
 - Dashboard fitness interactif
 - Réponses en français optimisées
+- Recommandations de tutos vidéo
